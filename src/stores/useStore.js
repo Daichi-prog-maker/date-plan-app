@@ -6,7 +6,7 @@ export const useStore = create((set, get) => ({
   plans: [],
   loading: false,
   
-  // �ꏊ�f�[�^�̎擾
+  // ・ｽ齒奇ｿｽf・ｽ[・ｽ^・ｽﾌ取得
   fetchPlaces: async () => {
     set({ loading: true })
     const { data, error } = await supabase
@@ -18,7 +18,7 @@ export const useStore = create((set, get) => ({
     set({ loading: false })
   },
   
-  // �ꏊ�̒ǉ�
+  // ・ｽ齒奇ｿｽﾌ追会ｿｽ
   addPlace: async (place) => {
     const { data, error } = await supabase
       .from('places')
@@ -31,7 +31,7 @@ export const useStore = create((set, get) => ({
     return { data, error }
   },
   
-  // �ꏊ�̍X�V
+  // ・ｽ齒奇ｿｽﾌ更・ｽV
   updatePlace: async (id, updates) => {
     const { data, error } = await supabase
       .from('places')
@@ -47,7 +47,7 @@ export const useStore = create((set, get) => ({
     return { data, error }
   },
   
-  // �ꏊ�̍폜
+  // ・ｽ齒奇ｿｽﾌ削除
   deletePlace: async (id) => {
     const { error } = await supabase
       .from('places')
@@ -60,8 +60,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
   
-  // �����폜
-  deletePlaces: async (ids) => {
+  // ・ｽ・ｽ・ｽ・ｽ・ｽ尞・  deletePlaces: async (ids) => {
     const { error } = await supabase
       .from('places')
       .delete()
@@ -73,7 +72,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  // �v�����̎擾
+  // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽﾌ取得
   fetchPlans: async () => {
     set({ loading: true })
     const { data, error } = await supabase
@@ -100,7 +99,7 @@ export const useStore = create((set, get) => ({
     set({ loading: false })
   },
 
-  // �v�����̒ǉ�
+  // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽﾌ追会ｿｽ
   addPlan: async (plan, placeIds) => {
     const { data: planData, error: planError } = await supabase
       .from('plans')
@@ -111,7 +110,7 @@ export const useStore = create((set, get) => ({
 
     const planId = planData[0].id
     
-    // �v�����ɏꏊ��ǉ�
+    // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽﾉ場所・ｽ・ｽﾇ会ｿｽ
     if (placeIds && placeIds.length > 0) {
       const planPlaces = placeIds.map((placeId, index) => ({
         plan_id: planId,
@@ -130,7 +129,7 @@ export const useStore = create((set, get) => ({
     return { data: planData[0], error: null }
   },
 
-  // �v�����̍X�V
+  // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽﾌ更・ｽV
   updatePlan: async (id, updates, placeIds) => {
     const { data, error } = await supabase
       .from('plans')
@@ -140,15 +139,13 @@ export const useStore = create((set, get) => ({
     
     if (error) return { error }
 
-    // �ꏊ�̏������ύX���ꂽ�ꍇ
-    if (placeIds !== undefined) {
-      // �����̊֘A���폜
-      await supabase
+    // ・ｽ齒奇ｿｽﾌ擾ｿｽ・ｽ・ｽ・ｽ・ｽ・ｽﾏ更・ｽ・ｽ・ｽ黷ｽ・ｽ鼾・    if (placeIds !== undefined) {
+      // ・ｽ・ｽ・ｽ・ｽ・ｽﾌ関連・ｽ・ｽ・ｽ尞・      await supabase
         .from('plan_places')
         .delete()
         .eq('plan_id', id)
 
-      // �V�����֘A��ǉ�
+      // ・ｽV・ｽ・ｽ・ｽ・ｽ・ｽﾖ連・ｽ・ｽﾇ会ｿｽ
       if (placeIds.length > 0) {
         const planPlaces = placeIds.map((placeId, index) => ({
           plan_id: id,
@@ -166,7 +163,7 @@ export const useStore = create((set, get) => ({
     return { data: data[0], error: null }
   },
 
-  // �v�����̍폜
+  // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽﾌ削除
   deletePlan: async (id) => {
     const { error } = await supabase
       .from('plans')
@@ -179,7 +176,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  // �v�����ɏꏊ��ǉ�
+  // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽﾉ場所・ｽ・ｽﾇ会ｿｽ
   addPlaceToPlan: async (planId, placeId) => {
     const plan = get().plans.find(p => p.id === planId)
     if (!plan) return { error: 'Plan not found' }
@@ -200,8 +197,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  // �v��������ꏊ���폜
-  removePlaceFromPlan: async (planId, placeId) => {
+  // ・ｽv・ｽ・ｽ・ｽ・ｽ・ｽ・ｽ・ｽ・ｽ齒奇ｿｽ・ｽ・ｽ尞・  removePlaceFromPlan: async (planId, placeId) => {
     const { error } = await supabase
       .from('plan_places')
       .delete()
@@ -212,6 +208,36 @@ export const useStore = create((set, get) => ({
       await get().fetchPlans()
     }
     return { error }
+  },
+
+  // 写真をアップロード
+  uploadPhoto: async (file, placeId) => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${placeId || Date.now()}-${Date.now()}.${fileExt}`
+      const filePath = `place-photos/${fileName}`
+
+      console.log('Uploading to Supabase Storage:', filePath)
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        return { error: uploadError }
+      }
+
+      const { data } = supabase.storage
+        .from('photos')
+        .getPublicUrl(filePath)
+
+      console.log('Public URL:', data.publicUrl)
+      return { data: data.publicUrl, error: null }
+    } catch (error) {
+      console.error('uploadPhoto exception:', error)
+      return { error }
+    }
   }
 }))
 

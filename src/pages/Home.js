@@ -67,7 +67,7 @@ export default function Home() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fce7f3', paddingBottom: '5rem' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fce7f3', paddingBottom: '8rem' }}>
       <div style={{ backgroundColor: 'white', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 10 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ec4899', textAlign: 'center', marginBottom: '1rem' }}>
           ○○に行きたいんじゃ！
@@ -265,6 +265,9 @@ function AddPlaceModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('=== AddPlace Submit開始 ===')
+    console.log('formData:', formData)
+    
     if (!formData.name.trim()) {
       alert('場所の名前を入力してください')
       return
@@ -272,7 +275,9 @@ function AddPlaceModal({ onClose }) {
     
     let photo_url = null
     if (formData.photoFile) {
+      console.log('写真をアップロード中...')
       const result = await stores.uploadPhoto(formData.photoFile, 'new')
+      console.log('アップロード結果:', result)
       if (!result.error) {
         photo_url = result.data
       }
@@ -283,13 +288,15 @@ function AddPlaceModal({ onClose }) {
     delete placeData.photoPreview
     if (photo_url) placeData.photo_url = photo_url
     
+    console.log('保存するデータ:', placeData)
     await stores.addPlace(placeData)
+    console.log('=== 保存完了 ===')
     onClose()
   }
 
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>新しい場所を追加</h2>
           <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
@@ -433,6 +440,9 @@ function EditPlaceModal({ place, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('=== EditPlace Submit開始 ===')
+    console.log('formData:', formData)
+    console.log('place.id:', place.id)
     if (!formData.name.trim()) {
       alert('場所の名前を入力してください')
       return
@@ -440,6 +450,7 @@ function EditPlaceModal({ place, onClose }) {
     
     let photo_url = formData.photoPreview
     if (formData.photoFile) {
+      console.log('写真をアップロード中...')
       const result = await stores.uploadPhoto(formData.photoFile, place.id)
       if (!result.error) {
         photo_url = result.data
@@ -457,7 +468,7 @@ function EditPlaceModal({ place, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>場所を編集</h2>
           <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>

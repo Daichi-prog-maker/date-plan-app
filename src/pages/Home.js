@@ -15,12 +15,13 @@ export default function Home() {
   const [searchText, setSearchText] = useState('')
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
+  const [sortBy, setSortBy] = useState('created_at') // created_at, name, favorite
 
   useEffect(() => {
     stores.fetchPlaces()
   }, [])
 
-  const filteredPlaces = stores.places.filter(place => {
+  let filteredPlaces = stores.places.filter(place => {
     const categoryMatch = selectedCategory === 'すべて' || place.category === selectedCategory
     const seasonMatch = selectedSeason === 'すべて' || place.season === selectedSeason
     const visitedMatch = visitedFilter === 'すべて' || 
@@ -30,6 +31,16 @@ export default function Home() {
       (place.address && place.address.includes(searchText)) ||
       (place.station && place.station.includes(searchText))
     return categoryMatch && seasonMatch && visitedMatch && searchMatch
+  })
+
+  // ソート処理
+  filteredPlaces = [...filteredPlaces].sort((a, b) => {
+    if (sortBy === 'favorite') {
+      if (a.is_favorite === b.is_favorite) return new Date(b.created_at) - new Date(a.created_at)
+      return a.is_favorite ? -1 : 1
+    }
+    if (sortBy === 'name') return a.name.localeCompare(b.name, 'ja')
+    return new Date(b.created_at) - new Date(a.created_at)
   })
 
   const toggleVisited = async (place) => {

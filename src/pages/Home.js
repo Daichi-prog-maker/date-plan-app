@@ -383,9 +383,17 @@ function AddPlaceModal({ onClose }) {
                 }
               }}
               style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            />
-            {formData.photoPreview && (
-              <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', marginTop: '0.5rem', borderRadius: '0.5rem' }} />
+            />{formData.photoPreview && (
+              <div style={{ position: 'relative', marginTop: '0.5rem' }}>
+                <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} />
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})}
+                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  削除
+                </button>
+              </div>
             )}
           </div>
 
@@ -441,7 +449,7 @@ function EditPlaceModal({ place, onClose }) {
     const placeData = { ...formData }
     delete placeData.photoFile
     delete placeData.photoPreview
-    if (photo_url) placeData.photo_url = photo_url
+    placeData.photo_url = photo_url
     
     await stores.updatePlace(place.id, placeData)
     onClose()

@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
-import { Plus, MapPin, Check, Trash2, Search, X } from 'lucide-react'
+import { Plus, MapPin, Check, Trash2, Search, X, Edit } from 'lucide-react'
 
 const CATEGORIES = ['ご飯', 'カフェ', 'おでかけ(外)', 'おでかけ(室内)', '旅行']
 const SEASONS = ['春', '夏', '秋', '冬', '通年']
@@ -8,8 +8,10 @@ const SEASONS = ['春', '夏', '秋', '冬', '通年']
 export default function Home() {
   const stores = useStore()
   const [showAddModal, setShowAddModal] = useState(false)
+  const [editingPlace, setEditingPlace] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('すべて')
   const [selectedSeason, setSelectedSeason] = useState('すべて')
+  const [visitedFilter, setVisitedFilter] = useState('すべて')
   const [searchText, setSearchText] = useState('')
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
@@ -21,11 +23,13 @@ export default function Home() {
   const filteredPlaces = stores.places.filter(place => {
     const categoryMatch = selectedCategory === 'すべて' || place.category === selectedCategory
     const seasonMatch = selectedSeason === 'すべて' || place.season === selectedSeason
+    const visitedMatch = visitedFilter === 'すべて' || 
+      (visitedFilter === '訪問済み' ? place.visited : !place.visited)
     const searchMatch = searchText === '' || 
       place.name.includes(searchText) || 
       (place.address && place.address.includes(searchText)) ||
       (place.station && place.station.includes(searchText))
-    return categoryMatch && seasonMatch && searchMatch
+    return categoryMatch && seasonMatch && visitedMatch && searchMatch
   })
 
   const toggleVisited = async (place) => {
@@ -90,6 +94,15 @@ export default function Home() {
               <option key={season} value={season}>{season}</option>
             ))}
           </select>
+          <select
+            value={visitedFilter}
+            onChange={(e) => setVisitedFilter(e.target.value)}
+            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
+          >
+            <option value="すべて">すべて</option>
+            <option value="未訪問">未訪問</option>
+            <option value="訪問済み">訪問済み</option>
+          </select>
         </div>
       </div>
 
@@ -141,7 +154,7 @@ export default function Home() {
                 )}
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{place.name}</h3>
                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
                         <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#fce7f3', color: '#db2777', borderRadius: '9999px' }}>
@@ -154,15 +167,28 @@ export default function Home() {
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleVisited(place)
-                      }}
-                      style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: place.visited ? '#d1fae5' : '#f3f4f6', color: place.visited ? '#059669' : '#9ca3af', cursor: 'pointer' }}
-                    >
-                      <Check size={20} />
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {!selectMode && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingPlace(place)
+                          }}
+                          style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fef3c7', color: '#f59e0b', cursor: 'pointer' }}
+                        >
+                          <Edit size={18} />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleVisited(place)
+                        }}
+                        style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: place.visited ? '#d1fae5' : '#f3f4f6', color: place.visited ? '#059669' : '#9ca3af', cursor: 'pointer' }}
+                      >
+                        <Check size={18} />
+                      </button>
+                    </div>
                   </div>
                   {place.station && (
                     <p style={{ fontSize: '0.875rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -191,6 +217,12 @@ export default function Home() {
       </div>
 
       {showAddModal && <AddPlaceModal onClose={() => setShowAddModal(false)} />}
+      {editingPlace && (
+        <EditPlaceModal 
+          place={editingPlace} 
+          onClose={() => setEditingPlace(null)} 
+        />
+      )}
     </div>
   )
 }
@@ -310,6 +342,129 @@ function AddPlaceModal({ onClose }) {
               style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
             >
               追加
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function EditPlaceModal({ place, onClose }) {
+  const stores = useStore()
+  const [formData, setFormData] = useState({
+    name: place.name || '',
+    category: place.category || 'ご飯',
+    address: place.address || '',
+    station: place.station || '',
+    memo: place.memo || '',
+    season: place.season || '通年'
+  })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!formData.name.trim()) {
+      alert('場所の名前を入力してください')
+      return
+    }
+    
+    await stores.updatePlace(place.id, formData)
+    onClose()
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>場所を編集</h2>
+          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
+            <X size={24} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              placeholder="例: 新宿カフェ"
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({...formData, category: e.target.value})}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label>
+            <input
+              type="text"
+              value={formData.station}
+              onChange={(e) => setFormData({...formData, station: e.target.value})}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              placeholder="例: 新宿駅"
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              placeholder="例: 東京都新宿区..."
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label>
+            <select
+              value={formData.season}
+              onChange={(e) => setFormData({...formData, season: e.target.value})}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+            >
+              {SEASONS.map(season => (
+                <option key={season} value={season}>{season}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label>
+            <textarea
+              value={formData.memo}
+              onChange={(e) => setFormData({...formData, memo: e.target.value})}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              rows="3"
+              placeholder="例: インスタで見つけた！パンケーキが美味しそう"
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ flex: 1, padding: '0.75rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.75rem', fontWeight: 'bold', backgroundColor: 'white', cursor: 'pointer' }}
+            >
+              キャンセル
+            </button>
+            <button
+              type="submit"
+              style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+            >
+              更新
             </button>
           </div>
         </form>

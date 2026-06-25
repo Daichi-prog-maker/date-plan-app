@@ -173,6 +173,9 @@ export default function Home() {
                   />
                 )}
                 <div style={{ flex: 1 }}>
+                  {place.photo_url && (
+                    <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '0.75rem' }} />
+                  )}
                   <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <div style={{ flex: 1 }}>
                       <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{place.name}</h3>
@@ -415,7 +418,9 @@ function EditPlaceModal({ place, onClose }) {
     address: place.address || '',
     station: place.station || '',
     memo: place.memo || '',
-    season: place.season || '通年'
+    season: place.season || '通年',
+    photoFile: null,
+    photoPreview: place.photo_url || null
   })
 
   const handleSubmit = async (e) => {
@@ -425,7 +430,20 @@ function EditPlaceModal({ place, onClose }) {
       return
     }
     
-    await stores.updatePlace(place.id, formData)
+    let photo_url = formData.photoPreview
+    if (formData.photoFile) {
+      const result = await stores.uploadPhoto(formData.photoFile, place.id)
+      if (!result.error) {
+        photo_url = result.data
+      }
+    }
+    
+    const placeData = { ...formData }
+    delete placeData.photoFile
+    delete placeData.photoPreview
+    if (photo_url) placeData.photo_url = photo_url
+    
+    await stores.updatePlace(place.id, placeData)
     onClose()
   }
 

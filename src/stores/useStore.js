@@ -114,7 +114,7 @@ export const useStore = create((set, get) => ({
     // �v�����ɏꏊ��ǉ�
     if (placeIds && placeIds.length > 0) {
       const planPlaces = placeIds.map((placeId, index) => ({
-        plan_id: id,
+        plan_id: planId,
           place_id: placeId,
           order_index: index
       }))

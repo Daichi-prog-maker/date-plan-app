@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand'
+import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 
 export const useStore = create((set, get) => ({
@@ -6,7 +6,7 @@ export const useStore = create((set, get) => ({
   plans: [],
   loading: false,
   
-  // 場所データの取得
+  // �ꏊ�f�[�^�̎擾
   fetchPlaces: async () => {
     set({ loading: true })
     const { data, error } = await supabase
@@ -18,7 +18,7 @@ export const useStore = create((set, get) => ({
     set({ loading: false })
   },
   
-  // 場所の追加
+  // �ꏊ�̒ǉ�
   addPlace: async (place) => {
     const { data, error } = await supabase
       .from('places')
@@ -31,7 +31,7 @@ export const useStore = create((set, get) => ({
     return { data, error }
   },
   
-  // 場所の更新
+  // �ꏊ�̍X�V
   updatePlace: async (id, updates) => {
     const { data, error } = await supabase
       .from('places')
@@ -47,7 +47,7 @@ export const useStore = create((set, get) => ({
     return { data, error }
   },
   
-  // 場所の削除
+  // �ꏊ�̍폜
   deletePlace: async (id) => {
     const { error } = await supabase
       .from('places')
@@ -60,7 +60,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
   
-  // 複数削除
+  // �����폜
   deletePlaces: async (ids) => {
     const { error } = await supabase
       .from('places')
@@ -73,7 +73,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  // プランの取得
+  // �v�����̎擾
   fetchPlans: async () => {
     set({ loading: true })
     const { data, error } = await supabase
@@ -100,7 +100,7 @@ export const useStore = create((set, get) => ({
     set({ loading: false })
   },
 
-  // プランの追加
+  // �v�����̒ǉ�
   addPlan: async (plan, placeIds) => {
     const { data: planData, error: planError } = await supabase
       .from('plans')
@@ -111,12 +111,12 @@ export const useStore = create((set, get) => ({
 
     const planId = planData[0].id
     
-    // プランに場所を追加
+    // �v�����ɏꏊ��ǉ�
     if (placeIds && placeIds.length > 0) {
       const planPlaces = placeIds.map((placeId, index) => ({
-        plan_id: planId,
-        place_id: placeId,
-        order_index: index
+        plan_id: id,
+          place_id: placeId,
+          order_index: index
       }))
 
       const { error: planPlacesError } = await supabase
@@ -130,7 +130,7 @@ export const useStore = create((set, get) => ({
     return { data: planData[0], error: null }
   },
 
-  // プランの更新
+  // �v�����̍X�V
   updatePlan: async (id, updates, placeIds) => {
     const { data, error } = await supabase
       .from('plans')
@@ -140,19 +140,19 @@ export const useStore = create((set, get) => ({
     
     if (error) return { error }
 
-    // 場所の順序が変更された場合
+    // �ꏊ�̏������ύX���ꂽ�ꍇ
     if (placeIds !== undefined) {
-      // 既存の関連を削除
+      // �����̊֘A���폜
       await supabase
         .from('plan_places')
         .delete()
         .eq('plan_id', id)
 
-      // 新しい関連を追加
+      // �V�����֘A��ǉ�
       if (placeIds.length > 0) {
         const planPlaces = placeIds.map((placeId, index) => ({
-          plan_id: planId,
-        place_id: placeId,
+          plan_id: id,
+          place_id: placeId,
           order_index: index
         }))
 
@@ -166,7 +166,7 @@ export const useStore = create((set, get) => ({
     return { data: data[0], error: null }
   },
 
-  // プランの削除
+  // �v�����̍폜
   deletePlan: async (id) => {
     const { error } = await supabase
       .from('plans')
@@ -179,7 +179,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  // プランに場所を追加
+  // �v�����ɏꏊ��ǉ�
   addPlaceToPlan: async (planId, placeId) => {
     const plan = get().plans.find(p => p.id === planId)
     if (!plan) return { error: 'Plan not found' }
@@ -200,7 +200,7 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  // プランから場所を削除
+  // �v��������ꏊ���폜
   removePlaceFromPlan: async (planId, placeId) => {
     const { error } = await supabase
       .from('plan_places')
@@ -214,3 +214,4 @@ export const useStore = create((set, get) => ({
     return { error }
   }
 }))
+

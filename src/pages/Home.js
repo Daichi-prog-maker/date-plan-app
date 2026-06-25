@@ -114,6 +114,15 @@ export default function Home() {
             <option value="未訪問">未訪問</option>
             <option value="訪問済み">訪問済み</option>
           </select>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
+          >
+            <option value="created_at">新しい順</option>
+            <option value="name">名前順</option>
+            <option value="favorite">お気に入り順</option>
+          </select>
         </div>
       </div>
 

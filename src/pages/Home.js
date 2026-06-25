@@ -255,7 +255,9 @@ function AddPlaceModal({ onClose }) {
     address: '',
     station: '',
     memo: '',
-    season: '通年'
+    season: '通年',
+    photoFile: null,
+    photoPreview: null
   })
 
   const handleSubmit = async (e) => {
@@ -265,7 +267,20 @@ function AddPlaceModal({ onClose }) {
       return
     }
     
-    await stores.addPlace(formData)
+    let photo_url = null
+    if (formData.photoFile) {
+      const result = await stores.uploadPhoto(formData.photoFile, 'new')
+      if (!result.error) {
+        photo_url = result.data
+      }
+    }
+    
+    const placeData = { ...formData }
+    delete placeData.photoFile
+    delete placeData.photoPreview
+    if (photo_url) placeData.photo_url = photo_url
+    
+    await stores.addPlace(placeData)
     onClose()
   }
 
@@ -347,6 +362,28 @@ function AddPlaceModal({ onClose }) {
               rows="3"
               placeholder="例: インスタで見つけた！パンケーキが美味しそう"
             />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0]
+                if (file) {
+                  const reader = new FileReader()
+                  reader.onloadend = () => {
+                    setFormData({...formData, photoFile: file, photoPreview: reader.result})
+                  }
+                  reader.readAsDataURL(file)
+                }
+              }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+            />
+            {formData.photoPreview && (
+              <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', marginTop: '0.5rem', borderRadius: '0.5rem' }} />
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>

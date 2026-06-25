@@ -114,7 +114,7 @@ export const useStore = create((set, get) => ({
     // プランに場所を追加
     if (placeIds && placeIds.length > 0) {
       const planPlaces = placeIds.map((placeId, index) => ({
-        plan_id: id,
+        plan_id: planId,
         place_id: placeId,
         order_index: index
       }))
@@ -151,8 +151,8 @@ export const useStore = create((set, get) => ({
       // 新しい関連を追加
       if (placeIds.length > 0) {
         const planPlaces = placeIds.map((placeId, index) => ({
-          plan_id: id,
-          place_id: placeId,
+          plan_id: planId,
+        place_id: placeId,
           order_index: index
         }))
 
@@ -189,7 +189,7 @@ export const useStore = create((set, get) => ({
     const { error } = await supabase
       .from('plan_places')
       .insert([{
-        plan_id: id,
+        plan_id: planId,
         place_id: placeId,
         order_index: orderIndex
       }])

@@ -68,6 +68,51 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
+  uploadPhotos: async (files, placeId) => {
+    const uploadedUrls = []
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${placeId}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `place-photos/${fileName}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(filePath, file)
+      
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        continue
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from('photos')
+        .getPublicUrl(filePath)
+      
+      if (urlData?.publicUrl) {
+        uploadedUrls.push(urlData.publicUrl)
+      }
+    }
+    return uploadedUrls
+  },
+
+  deletePhoto: async (photoUrl) => {
+    try {
+      const urlParts = photoUrl.split('/place-photos/')
+      if (urlParts.length === 2) {
+        const filePath = `place-photos/${urlParts[1]}`
+        const { error } = await supabase.storage
+          .from('photos')
+          .remove([filePath])
+        
+        if (error) {
+          console.error('Delete photo error:', error)
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting photo:', err)
+    }
+  },
+
   fetchPlans: async () => {
     set({ loading: true })
     const { data, error } = await supabase
@@ -197,55 +242,5 @@ export const useStore = create((set, get) => ({
       await get().fetchPlans()
     }
     return { error }
-  },
-
-  uploadPhotos: async (files, placeId) => {
-    try {
-      const uploadedUrls = []
-      
-      for (const file of files) {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${placeId || Date.now()}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `place-photos/${fileName}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('photos')
-          .upload(filePath, file, { upsert: true })
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError)
-          continue
-        }
-
-        const { data } = supabase.storage
-          .from('photos')
-          .getPublicUrl(filePath)
-
-        uploadedUrls.push(data.publicUrl)
-      }
-
-      return { data: uploadedUrls, error: null }
-    } catch (error) {
-      console.error('uploadPhotos exception:', error)
-      return { error }
-    }
-  },
-
-  deletePhoto: async (photoUrl) => {
-    try {
-      const urlParts = photoUrl.split('place-photos/')
-      if (urlParts.length < 2) return { error: 'Invalid URL' }
-      
-      const filePath = `place-photos/${urlParts[1]}`
-      
-      const { error } = await supabase.storage
-        .from('photos')
-        .remove([filePath])
-      
-      return { error }
-    } catch (error) {
-      console.error('deletePhoto exception:', error)
-      return { error }
-    }
   }
 }))

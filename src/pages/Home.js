@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
-import { Plus, Search, Trash2, X, MapPin, Calendar, Tag } from 'lucide-react'
+import { Plus, Search, Trash2, X, MapPin, Calendar, Tag, Filter } from 'lucide-react'
 
 export default function Home() {
   const { places, loading, fetchPlaces, deletePlace, deletePlaces } = useStore()
@@ -14,6 +14,7 @@ export default function Home() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingPlace, setEditingPlace] = useState(null)
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     fetchPlaces()
@@ -59,19 +60,40 @@ export default function Home() {
   }
 
   return (
-    <div style={{ padding: '16px', paddingBottom: '80px' }}>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Search style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} size={20} />
+    <div style={{ padding: '16px', paddingBottom: '100px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'stretch' }}>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          style={{
+            width: '48px',
+            minWidth: '48px',
+            height: '48px',
+            borderRadius: '8px',
+            backgroundColor: showFilters ? '#ec4899' : 'white',
+            color: showFilters ? 'white' : '#ec4899',
+            border: showFilters ? 'none' : '1px solid #ec4899',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}
+        >
+          <Filter size={20} />
+        </button>
+        <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+          <Search style={{ position: 'absolute', left: '12px', top: '14px', color: '#9ca3af', pointerEvents: 'none' }} size={20} />
           <input
             type="text"
-            placeholder="場所を検索..."
+            placeholder="リストから検索..."
             style={{
               width: '100%',
+              height: '48px',
               padding: '10px 10px 10px 40px',
               border: '1px solid #e5e7eb',
               borderRadius: '8px',
-              fontSize: '14px'
+              fontSize: '14px',
+              boxSizing: 'border-box'
             }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -81,132 +103,160 @@ export default function Home() {
           onClick={() => setShowAddModal(true)}
           style={{
             width: '48px',
+            minWidth: '48px',
             height: '48px',
-            borderRadius: '50%',
+            borderRadius: '8px',
             backgroundColor: '#ec4899',
             color: 'white',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           <Plus size={24} />
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '8px' }}>
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '20px',
-              border: selectedCategory === cat ? 'none' : '1px solid #ec4899',
-              backgroundColor: selectedCategory === cat ? '#ec4899' : 'white',
-              color: selectedCategory === cat ? 'white' : '#ec4899',
-              fontSize: '14px',
-              whiteSpace: 'nowrap',
-              cursor: 'pointer'
-            }}
-          >
-            {cat === 'all' ? 'すべて' : cat}
-          </button>
-        ))}
-      </div>
+      {showFilters && (
+        <div style={{ 
+          backgroundColor: 'white', 
+          borderRadius: '12px', 
+          padding: '16px', 
+          marginBottom: '16px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+              カテゴリー
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all">すべて</option>
+              <option value="ご飯">ご飯</option>
+              <option value="カフェ">カフェ</option>
+              <option value="おでかけ(外)">おでかけ(外)</option>
+              <option value="おでかけ(室内)">おでかけ(室内)</option>
+              <option value="旅行">旅行</option>
+            </select>
+          </div>
 
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '8px' }}>
-        {seasons.map(season => (
-          <button
-            key={season}
-            onClick={() => setSelectedSeason(season)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '20px',
-              border: selectedSeason === season ? 'none' : '1px solid #ec4899',
-              backgroundColor: selectedSeason === season ? '#ec4899' : 'white',
-              color: selectedSeason === season ? 'white' : '#ec4899',
-              fontSize: '14px',
-              whiteSpace: 'nowrap',
-              cursor: 'pointer'
-            }}
-          >
-            {season === 'all' ? 'すべて' : season}
-          </button>
-        ))}
-      </div>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+              季節
+            </label>
+            <select
+              value={selectedSeason}
+              onChange={(e) => setSelectedSeason(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all">すべて</option>
+              <option value="春">春</option>
+              <option value="夏">夏</option>
+              <option value="秋">秋</option>
+              <option value="冬">冬</option>
+              <option value="通年">通年</option>
+            </select>
+          </div>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => setShowVisitedOnly(!showVisitedOnly)}
-          style={{
-            padding: '6px 16px',
-            borderRadius: '20px',
-            border: showVisitedOnly ? 'none' : '1px solid #ec4899',
-            backgroundColor: showVisitedOnly ? '#ec4899' : 'white',
-            color: showVisitedOnly ? 'white' : '#ec4899',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}
-        >
-          行った場所のみ
-        </button>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          style={{
-            padding: '6px 16px',
-            borderRadius: '20px',
-            border: '1px solid #ec4899',
-            backgroundColor: 'white',
-            color: '#ec4899',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}
-        >
-          <option value="newest">新しい順</option>
-          <option value="name">名前順</option>
-        </select>
-        <button
-          onClick={() => {
-            setIsSelectionMode(!isSelectionMode)
-            setSelectedIds([])
-          }}
-          style={{
-            padding: '6px 16px',
-            borderRadius: '20px',
-            border: isSelectionMode ? 'none' : '1px solid #ec4899',
-            backgroundColor: isSelectionMode ? '#ec4899' : 'white',
-            color: isSelectionMode ? 'white' : '#ec4899',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}
-        >
-          {isSelectionMode ? 'キャンセル' : '選択'}
-        </button>
-        {isSelectionMode && selectedIds.length > 0 && (
-          <button
-            onClick={handleBulkDelete}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '20px',
-              border: 'none',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <Trash2 size={16} />
-            削除 ({selectedIds.length})
-          </button>
-        )}
-      </div>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+              並び順
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="newest">新しい順</option>
+              <option value="name">名前順</option>
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setShowVisitedOnly(!showVisitedOnly)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: showVisitedOnly ? 'none' : '1px solid #ec4899',
+                backgroundColor: showVisitedOnly ? '#ec4899' : 'white',
+                color: showVisitedOnly ? 'white' : '#ec4899',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              行った場所のみ
+            </button>
+            <button
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode)
+                setSelectedIds([])
+              }}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: isSelectionMode ? 'none' : '1px solid #ec4899',
+                backgroundColor: isSelectionMode ? '#ec4899' : 'white',
+                color: isSelectionMode ? 'white' : '#ec4899',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              {isSelectionMode ? 'キャンセル' : '選択'}
+            </button>
+            {isSelectionMode && selectedIds.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <Trash2 size={16} />
+                削除 ({selectedIds.length})
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '32px' }}>
@@ -297,32 +347,15 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
           backgroundColor: isSelected ? '#ec4899' : 'white',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          zIndex: 10
         }}>
           {isSelected && <span style={{ color: 'white', fontSize: '16px' }}>✓</span>}
         </div>
       )}
 
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-        {displayPhotos.length > 0 && (
-          <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-            {displayPhotos.map((photoUrl, idx) => (
-              <img
-                key={idx}
-                src={photoUrl}
-                alt=""
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '4px',
-                  objectFit: 'cover'
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
             {place.name}
           </h3>
@@ -387,6 +420,24 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
             </div>
           )}
         </div>
+
+        {displayPhotos.length > 0 && (
+          <div style={{ display: 'flex', gap: '4px', flexShrink: 0, flexDirection: 'column' }}>
+            {displayPhotos.map((photoUrl, idx) => (
+              <img
+                key={idx}
+                src={photoUrl}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '6px',
+                  objectFit: 'cover'
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -509,7 +560,8 @@ function AddPlaceModal({ onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -526,7 +578,8 @@ function AddPlaceModal({ onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             >
               <option>ご飯</option>
@@ -549,7 +602,8 @@ function AddPlaceModal({ onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             >
               <option>通年</option>
@@ -573,7 +627,8 @@ function AddPlaceModal({ onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -591,7 +646,8 @@ function AddPlaceModal({ onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -610,7 +666,8 @@ function AddPlaceModal({ onClose }) {
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
                 fontSize: '14px',
-                resize: 'vertical'
+                resize: 'vertical',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -629,7 +686,8 @@ function AddPlaceModal({ onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
             {photoPreviews.length > 0 && (
@@ -674,7 +732,7 @@ function AddPlaceModal({ onClose }) {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', paddingBottom: '20px' }}>
             <button
               type="button"
               onClick={onClose}
@@ -771,7 +829,8 @@ function EditPlaceModal({ place, onClose }) {
 
       if (error) {
         alert('エラーが発生しました')
-        console.error(error)
+        console.error(
+error)
       } else {
         onClose()
       }
@@ -836,7 +895,8 @@ function EditPlaceModal({ place, onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -853,14 +913,15 @@ function EditPlaceModal({ place, onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             >
               <option>ご飯</option>
               <option>カフェ</option>
               <option>おでかけ(外)</option>
               <option>おでかけ(室内)</option>
-                            <option>旅行</option>
+              <option>旅行</option>
             </select>
           </div>
 
@@ -876,7 +937,8 @@ function EditPlaceModal({ place, onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             >
               <option>通年</option>
@@ -900,7 +962,8 @@ function EditPlaceModal({ place, onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -918,7 +981,8 @@ function EditPlaceModal({ place, onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -937,7 +1001,8 @@ function EditPlaceModal({ place, onClose }) {
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
                 fontSize: '14px',
-                resize: 'vertical'
+                resize: 'vertical',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -1002,7 +1067,8 @@ function EditPlaceModal({ place, onClose }) {
                 padding: '10px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                fontSize: '14px'
+                fontSize: '14px',
+                boxSizing: 'border-box'
               }}
             />
             {newPhotoPreviews.length > 0 && (
@@ -1047,7 +1113,7 @@ function EditPlaceModal({ place, onClose }) {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', paddingBottom: '20px' }}>
             <button
               type="button"
               onClick={onClose}
@@ -1085,4 +1151,3 @@ function EditPlaceModal({ place, onClose }) {
     </div>
   )
 }
-

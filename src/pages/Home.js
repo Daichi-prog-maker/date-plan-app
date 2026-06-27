@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
 import { Plus, Search, Trash2, X, MapPin, Calendar, Tag, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ghibliStyles, commonStyles, mergeGhibliStyles } from '../stores/ghibliStyles'
 
 export default function Home() {
   const { places, loading, fetchPlaces, deletePlace, deletePlaces } = useStore()
@@ -60,61 +61,43 @@ export default function Home() {
   }
 
   return (
-    <div style={{ padding: '16px', paddingBottom: '100px' }}>
+    <div style={{ padding: '16px', paddingBottom: '100px', minHeight: '100vh' }}>
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', alignItems: 'stretch' }}>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          style={{
-            width: '48px',
-            minWidth: '48px',
-            height: '48px',
-            borderRadius: '8px',
-            backgroundColor: showFilters ? '#ec4899' : 'white',
-            color: showFilters ? 'white' : '#ec4899',
-            border: showFilters ? 'none' : '1px solid #ec4899',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            flexShrink: 0
-          }}
+          style={mergeGhibliStyles(
+            showFilters ? ghibliStyles.buttonPink : ghibliStyles.button,
+            { width: '48px', minWidth: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
+          )}
         >
           <Filter size={20} />
         </button>
         <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-          <Search style={{ position: 'absolute', left: '12px', top: '14px', color: '#9ca3af', pointerEvents: 'none' }} size={20} />
+          <Search style={{ position: 'absolute', left: '12px', top: '14px', color: '#8B7355', pointerEvents: 'none' }} size={20} />
           <input
             type="text"
             placeholder="リストから検索..."
-            style={{
+            style={mergeGhibliStyles(ghibliStyles.input, {
               width: '100%',
               height: '48px',
-              padding: '10px 10px 10px 40px',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              fontSize: '14px',
+              paddingLeft: '40px',
               boxSizing: 'border-box'
-            }}
+            })}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          style={{
+          style={mergeGhibliStyles(ghibliStyles.buttonPink, {
             width: '48px',
             minWidth: '48px',
             height: '48px',
-            borderRadius: '8px',
-            backgroundColor: '#ec4899',
-            color: 'white',
-            border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
             flexShrink: 0
-          }}
+          })}
         >
           <Plus size={24} />
         </button>
@@ -124,15 +107,10 @@ export default function Home() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          style={{
+          style={mergeGhibliStyles(ghibliStyles.input, {
             padding: '8px 16px',
-            borderRadius: '8px',
-            border: '1px solid #ec4899',
-            backgroundColor: 'white',
-            color: '#ec4899',
-            fontSize: '14px',
             cursor: 'pointer'
-          }}
+          })}
         >
           <option value="newest">新しい順</option>
           <option value="name">名前順</option>
@@ -142,33 +120,24 @@ export default function Home() {
             setIsSelectionMode(!isSelectionMode)
             setSelectedIds([])
           }}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: isSelectionMode ? 'none' : '1px solid #ec4899',
-            backgroundColor: isSelectionMode ? '#ec4899' : 'white',
-            color: isSelectionMode ? 'white' : '#ec4899',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}
+          style={mergeGhibliStyles(
+            isSelectionMode ? ghibliStyles.buttonPink : ghibliStyles.button,
+            { padding: '8px 16px' }
+          )}
         >
           {isSelectionMode ? 'キャンセル' : '選択'}
         </button>
         {isSelectionMode && selectedIds.length > 0 && (
           <button
             onClick={handleBulkDelete}
-            style={{
+            style={mergeGhibliStyles(ghibliStyles.button, {
               padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              fontSize: '14px',
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
-            }}
+              gap: '4px',
+              background: 'linear-gradient(to bottom, #D19A9A 0%, #B87C7C 100%)',
+              border: '2px solid #A86B6B'
+            })}
           >
             <Trash2 size={16} />
             削除 ({selectedIds.length})
@@ -177,29 +146,21 @@ export default function Home() {
       </div>
 
       {showFilters && (
-        <div style={{ 
-          backgroundColor: 'white', 
-          borderRadius: '12px', 
-          padding: '16px', 
-          marginBottom: '16px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
+        <div style={mergeGhibliStyles(ghibliStyles.card, {
+          padding: '16px',
+          marginBottom: '16px'
+        })}>
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#4A3F35' }}>
               カテゴリー
             </label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                backgroundColor: 'white',
                 cursor: 'pointer'
-              }}
+              })}
             >
               <option value="all">すべて</option>
               <option value="ご飯">ご飯</option>
@@ -211,21 +172,16 @@ export default function Home() {
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#4A3F35' }}>
               季節
             </label>
             <select
               value={selectedSeason}
               onChange={(e) => setSelectedSeason(e.target.value)}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                backgroundColor: 'white',
                 cursor: 'pointer'
-              }}
+              })}
             >
               <option value="all">すべて</option>
               <option value="春">春</option>
@@ -239,15 +195,10 @@ export default function Home() {
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setShowVisitedOnly(!showVisitedOnly)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: showVisitedOnly ? 'none' : '1px solid #ec4899',
-                backgroundColor: showVisitedOnly ? '#ec4899' : 'white',
-                color: showVisitedOnly ? 'white' : '#ec4899',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
+              style={mergeGhibliStyles(
+                showVisitedOnly ? ghibliStyles.buttonPink : ghibliStyles.button,
+                { padding: '8px 16px' }
+              )}
             >
               行った場所のみ
             </button>
@@ -258,8 +209,8 @@ export default function Home() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '32px' }}>
           <div style={{ 
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #ec4899',
+            border: '4px solid #E8DCC8',
+            borderTop: '4px solid #8B7355',
             borderRadius: '50%',
             width: '40px',
             height: '40px',
@@ -268,9 +219,17 @@ export default function Home() {
           }}></div>
         </div>
       ) : filteredPlaces.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
-          <p>場所が見つかりませんでした</p>
-          <p style={{ fontSize: '14px', marginTop: '8px' }}>右上の＋ボタンから追加してみましょう！</p>
+        <div style={mergeGhibliStyles(ghibliStyles.card, {
+          textAlign: 'center',
+          padding: '3rem 1rem'
+        })}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#4A3F35', marginBottom: '0.5rem' }}>
+            場所が見つかりませんでした
+          </h2>
+          <p style={{ color: '#8B7355', fontSize: '0.875rem' }}>
+            右上の＋ボタンから追加してみましょう！
+          </p>
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '16px' }}>
@@ -304,7 +263,7 @@ export default function Home() {
     </div>
   )
 }
-
+// PhotoViewer Component
 function PhotoViewer({ photos, initialIndex, onClose }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
 
@@ -324,7 +283,7 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.9)',
+        backgroundColor: 'rgba(74, 63, 53, 0.95)',
         zIndex: 2000,
         display: 'flex',
         alignItems: 'center',
@@ -337,22 +296,18 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
           e.stopPropagation()
           onClose()
         }}
-        style={{
+        style={mergeGhibliStyles(ghibliStyles.button, {
           position: 'absolute',
           top: '16px',
           right: '16px',
           width: '40px',
           height: '40px',
           borderRadius: '50%',
-          backgroundColor: 'rgba(255,255,255,0.2)',
-          border: 'none',
-          color: 'white',
-          cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 2001
-        }}
+        })}
       >
         <X size={24} />
       </button>
@@ -364,21 +319,17 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
               e.stopPropagation()
               goPrev()
             }}
-            style={{
+            style={mergeGhibliStyles(ghibliStyles.button, {
               position: 'absolute',
               left: '16px',
               width: '40px',
               height: '40px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              border: 'none',
-              color: 'white',
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 2001
-            }}
+            })}
           >
             <ChevronLeft size={24} />
           </button>
@@ -387,21 +338,17 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
               e.stopPropagation()
               goNext()
             }}
-            style={{
+            style={mergeGhibliStyles(ghibliStyles.button, {
               position: 'absolute',
               right: '16px',
               width: '40px',
               height: '40px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              border: 'none',
-              color: 'white',
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 2001
-            }}
+            })}
           >
             <ChevronRight size={24} />
           </button>
@@ -414,7 +361,9 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
         style={{
           maxWidth: '90%',
           maxHeight: '90%',
-          objectFit: 'contain'
+          objectFit: 'contain',
+          borderRadius: '12px',
+          border: '3px solid #8B7355'
         }}
         onClick={(e) => e.stopPropagation()}
       />
@@ -426,11 +375,12 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
             bottom: '16px',
             left: '50%',
             transform: 'translateX(-50%)',
-            color: 'white',
+            color: '#F5F1E8',
             fontSize: '14px',
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            padding: '4px 12px',
-            borderRadius: '12px'
+            backgroundColor: 'rgba(139, 115, 85, 0.8)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: '2px solid #8B7355'
           }}
         >
           {currentIndex + 1} / {photos.length}
@@ -440,6 +390,7 @@ function PhotoViewer({ photos, initialIndex, onClose }) {
   )
 }
 
+// PlaceCard Component
 function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEdit, onDelete }) {
   const { updatePlace } = useStore()
   const [showPhotoViewer, setShowPhotoViewer] = useState(false)
@@ -466,15 +417,12 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
     <>
       <div
         onClick={isSelectionMode ? onToggleSelection : onEdit}
-        style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        style={mergeGhibliStyles(ghibliStyles.card, {
           padding: '16px',
           cursor: 'pointer',
-          border: isSelected ? '2px solid #ec4899' : '2px solid transparent',
+          border: isSelected ? '3px solid #E8B5B5' : '3px solid #8B7355',
           position: 'relative'
-        }}
+        })}
       >
         {isSelectionMode && (
           <div style={{
@@ -484,55 +432,46 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
             width: '24px',
             height: '24px',
             borderRadius: '50%',
-            border: '2px solid #ec4899',
-            backgroundColor: isSelected ? '#ec4899' : 'white',
+            border: '2px solid #8B7355',
+            backgroundColor: isSelected ? '#E8B5B5' : '#FAF8F3',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 10
           }}>
-            {isSelected && <span style={{ color: 'white', fontSize: '16px' }}>✓</span>}
+            {isSelected && <span style={{ color: '#4A3F35', fontSize: '16px' }}>✓</span>}
           </div>
         )}
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#4A3F35' }}>
               {place.name}
             </h3>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
-              <span style={{
-                padding: '2px 8px',
-                borderRadius: '12px',
-                backgroundColor: '#fce7f3',
-                color: '#ec4899',
-                fontSize: '12px'
-              }}>
+              <span style={ghibliStyles.tag}>
                 {place.category}
               </span>
               {place.season && (
-                <span style={{
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  backgroundColor: '#fef3c7',
-                  color: '#f59e0b',
-                  fontSize: '12px'
-                }}>
+                <span style={mergeGhibliStyles(ghibliStyles.tag, {
+                  background: 'linear-gradient(to bottom, #B8C5B0 0%, #9DB89A 100%)',
+                  border: '1px solid #8B9E88'
+                })}>
                   {place.season}
                 </span>
               )}
             </div>
 
             {place.station && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#8B7355', marginBottom: '4px' }}>
                 <MapPin size={14} />
                 <span>{place.station}</span>
               </div>
             )}
 
             {place.memo && (
-              <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+              <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#8B7355', lineHeight: '1.5' }}>
                 {place.memo}
               </p>
             )}
@@ -541,20 +480,17 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 <button
                   onClick={toggleVisited}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    backgroundColor: place.visited ? '#22c55e' : '#e5e7eb',
-                    color: place.visited ? 'white' : '#6b7280',
-                    fontSize: '12px',
-                    cursor: 'pointer'
-                  }}
+                  style={mergeGhibliStyles(
+                    place.visited ? 
+                      { ...ghibliStyles.button, background: 'linear-gradient(to bottom, #B8C5B0 0%, #9DB89A 100%)', border: '2px solid #8B9E88' } : 
+                      ghibliStyles.button,
+                    { padding: '6px 12px', fontSize: '12px' }
+                  )}
                 >
                   {place.visited ? '✓ 行った' : '行ってない'}
                 </button>
                 {place.visited && place.visited_date && (
-                  <span style={{ fontSize: '12px', color: '#9ca3af', alignSelf: 'center' }}>
+                  <span style={{ fontSize: '12px', color: '#8B7355', alignSelf: 'center' }}>
                     {new Date(place.visited_date).toLocaleDateString('ja-JP')}
                   </span>
                 )}
@@ -575,7 +511,8 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
                     height: '60px',
                     borderRadius: '8px',
                     objectFit: 'cover',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    border: '2px solid #C9A87C'
                   }}
                 />
               ))}
@@ -594,7 +531,7 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
     </>
   )
 }
-
+// AddPlaceModal Component
 function AddPlaceModal({ onClose }) {
   const { addPlace, uploadPhotos } = useStore()
   const [formData, setFormData] = useState({
@@ -606,56 +543,101 @@ function AddPlaceModal({ onClose }) {
     memo: '',
     visited: false
   })
-  const [photoFiles, setPhotoFiles] = useState([])
-  const [photoPreviews, setPhotoPreviews] = useState([])
+  const [photos, setPhotos] = useState([])
   const [uploading, setUploading] = useState(false)
 
-  const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files || [])
-    setPhotoFiles(prev => [...prev, ...files])
-    
-    files.forEach(file => {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPhotoPreviews(prev => [...prev, reader.result])
-      }
-      reader.readAsDataURL(file)
-    })
-  }
-
-  const removePhoto = (index) => {
-    setPhotoFiles(prev => prev.filter((_, i) => i !== index))
-    setPhotoPreviews(prev => prev.filter((_, i) => i !== index))
-  }
+  // Google Places Autocomplete state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [predictions, setPredictions] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setUploading(true)
 
+    const newPlace = {
+      ...formData,
+      visited_date: formData.visited ? new Date().toISOString() : null,
+      photos: []
+    }
+
+    const { data, error } = await addPlace(newPlace)
+
+    if (!error && data && photos.length > 0) {
+      const uploadedUrls = await uploadPhotos(photos, data.id)
+      if (uploadedUrls.length > 0) {
+        await useStore.getState().updatePlace(data.id, { photos: uploadedUrls })
+      }
+    }
+
+    setUploading(false)
+    if (!error) onClose()
+  }
+
+  const handlePhotoChange = (e) => {
+    const files = Array.from(e.target.files)
+    setPhotos(prev => [...prev, ...files])
+  }
+
+  const removePhoto = (index) => {
+    setPhotos(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Google Places Autocomplete
+  const searchPlaces = async (query) => {
+    if (query.length < 3) {
+      setPredictions([])
+      return
+    }
+
+    setIsSearching(true)
     try {
-      const tempId = Date.now()
-      let photoUrls = []
-
-      if (photoFiles.length > 0) {
-        photoUrls = await uploadPhotos(photoFiles, tempId)
+      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&language=ja&components=country:jp&key=${apiKey}`
+      )
+      const data = await response.json()
+      
+      if (data.predictions) {
+        setPredictions(data.predictions)
       }
-
-      const { data, error } = await addPlace({
-        ...formData,
-        photos: photoUrls
-      })
-
-      if (error) {
-        alert('エラーが発生しました')
-        console.error(error)
-      } else {
-        onClose()
-      }
-    } catch (err) {
-      alert('エラーが発生しました')
-      console.error(err)
+    } catch (error) {
+      console.error('Place search error:', error)
     } finally {
-      setUploading(false)
+      setIsSearching(false)
+    }
+  }
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    searchPlaces(query)
+  }
+
+  const selectPlace = async (placeId) => {
+    try {
+      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&language=ja&fields=name,formatted_address,geometry&key=${apiKey}`
+      )
+      const data = await response.json()
+      
+      if (data.result) {
+        const result = data.result
+        const addressParts = result.formatted_address.split(' ')
+        
+        setFormData(prev => ({
+          ...prev,
+          name: result.name,
+          address: result.formatted_address,
+          station: addressParts[0] || ''
+        }))
+        
+        setSearchQuery('')
+        setPredictions([])
+      }
+    } catch (error) {
+      console.error('Place details error:', error)
     }
   }
 
@@ -666,200 +648,261 @@ function AddPlaceModal({ onClose }) {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(74, 63, 53, 0.7)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
       padding: '16px'
     }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '24px',
-        maxWidth: '500px',
+      <div style={mergeGhibliStyles(ghibliStyles.card, {
         width: '100%',
+        maxWidth: '500px',
         maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>新しい場所を追加</h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '4px'
-            }}
-          >
-            <X size={24} />
-          </button>
-        </div>
+        overflow: 'auto',
+        padding: '24px',
+        position: 'relative'
+      })}>
+        <button
+          onClick={onClose}
+          style={mergeGhibliStyles(ghibliStyles.button, {
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0
+          })}
+        >
+          <X size={20} />
+        </button>
+
+        <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px', fontWeight: '600', color: '#4A3F35' }}>
+          新しい場所を追加
+        </h2>
 
         <form onSubmit={handleSubmit}>
+          {/* Google Places Search */}
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              場所名 *
+            <label style={commonStyles.label}>
+              Google検索
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="場所を検索..."
+                style={mergeGhibliStyles(ghibliStyles.input, {
+                  width: '100%',
+                  boxSizing: 'border-box'
+                })}
+              />
+              {isSearching && (
+                <div style={{ 
+                  position: 'absolute', 
+                  right: '12px', 
+                  top: '12px',
+                  color: '#8B7355' 
+                }}>
+                  検索中...
+                </div>
+              )}
+              {predictions.length > 0 && (
+                <div style={mergeGhibliStyles(ghibliStyles.card, {
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '4px',
+                  maxHeight: '200px',
+                  overflow: 'auto',
+                  zIndex: 1001,
+                  padding: '8px'
+                })}>
+                  {predictions.map((prediction) => (
+                    <div
+                      key={prediction.place_id}
+                      onClick={() => selectPlace(prediction.place_id)}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        marginBottom: '4px',
+                        backgroundColor: '#FAF8F3',
+                        border: '2px solid transparent',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#F5F1E8'
+                        e.currentTarget.style.borderColor = '#C9A87C'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#FAF8F3'
+                        e.currentTarget.style.borderColor = 'transparent'
+                      }}
+                    >
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3F35', marginBottom: '2px' }}>
+                        {prediction.structured_formatting.main_text}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#8B7355' }}>
+                        {prediction.structured_formatting.secondary_text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={commonStyles.label}>
+              場所名 <span style={{ color: '#E8B5B5' }}>*</span>
             </label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
                 boxSizing: 'border-box'
-              }}
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              カテゴリー *
+            <label style={commonStyles.label}>
+              カテゴリー
             </label>
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
+                boxSizing: 'border-box',
+                cursor: 'pointer'
+              })}
             >
-              <option>ご飯</option>
-              <option>カフェ</option>
-              <option>おでかけ(外)</option>
-              <option>おでかけ(室内)</option>
-              <option>旅行</option>
+              <option value="ご飯">ご飯</option>
+              <option value="カフェ">カフェ</option>
+              <option value="おでかけ(外)">おでかけ(外)</option>
+              <option value="おでかけ(室内)">おでかけ(室内)</option>
+              <option value="旅行">旅行</option>
             </select>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               季節
             </label>
             <select
               value={formData.season}
               onChange={(e) => setFormData({ ...formData, season: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
+                boxSizing: 'border-box',
+                cursor: 'pointer'
+              })}
             >
-              <option>通年</option>
-              <option>春</option>
-              <option>夏</option>
-              <option>秋</option>
-              <option>冬</option>
+              <option value="通年">通年</option>
+              <option value="春">春</option>
+              <option value="夏">夏</option>
+              <option value="秋">秋</option>
+              <option value="冬">冬</option>
             </select>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               最寄り駅
             </label>
             <input
               type="text"
               value={formData.station}
               onChange={(e) => setFormData({ ...formData, station: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
                 boxSizing: 'border-box'
-              }}
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               住所
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
                 boxSizing: 'border-box'
-              }}
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               メモ
             </label>
             <textarea
               value={formData.memo}
               onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
               rows={3}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
+                boxSizing: 'border-box',
                 resize: 'vertical',
-                boxSizing: 'border-box'
-              }}
+                fontFamily: 'inherit'
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               写真
             </label>
             <input
               type="file"
-              accept="image/*"
               multiple
+              accept="image/*"
               onChange={handlePhotoChange}
               style={{
+                display: 'block',
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
+                padding: '8px',
                 fontSize: '14px',
-                boxSizing: 'border-box'
+                color: '#4A3F35',
+                border: '2px solid #C9A87C',
+                borderRadius: '8px',
+                backgroundColor: '#FAF8F3',
+                cursor: 'pointer'
               }}
             />
-            {photoPreviews.length > 0 && (
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-                {photoPreviews.map((preview, idx) => (
-                  <div key={idx} style={{ position: 'relative' }}>
+            {photos.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                {photos.map((photo, index) => (
+                  <div key={index} style={{ position: 'relative' }}>
                     <img
-                      src={preview}
+                      src={URL.createObjectURL(photo)}
                       alt=""
                       style={{
-                        width:
- '80px',
+                        width: '80px',
                         height: '80px',
                         objectFit: 'cover',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        border: '2px solid #C9A87C'
                       }}
                     />
                     <button
                       type="button"
-                      onClick={() => removePhoto(idx)}
+                      onClick={() => removePhoto(index)}
                       style={{
                         position: 'absolute',
                         top: '-8px',
@@ -867,17 +910,16 @@ function AddPlaceModal({ onClose }) {
                         width: '24px',
                         height: '24px',
                         borderRadius: '50%',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
+                        border: '2px solid #8B7355',
+                        backgroundColor: '#E8B5B5',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '16px'
+                        cursor: 'pointer',
+                        padding: 0
                       }}
                     >
-                      ×
+                      <X size={14} color="#4A3F35" />
                     </button>
                   </div>
                 ))}
@@ -885,37 +927,44 @@ function AddPlaceModal({ onClose }) {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', paddingBottom: '20px' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={formData.visited}
+                onChange={(e) => setFormData({ ...formData, visited: e.target.checked })}
+                style={{ 
+                  width: '18px', 
+                  height: '18px',
+                  cursor: 'pointer',
+                  accentColor: '#C9A87C'
+                }}
+              />
+              <span style={{ fontSize: '14px', color: '#4A3F35' }}>すでに行った</span>
+            </label>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.button, {
                 flex: 1,
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #e5e7eb',
-                backgroundColor: 'white',
-                fontSize: '16px',
-                cursor: 'pointer'
-              }}
+                padding: '12px'
+              })}
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={uploading}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.buttonPink, {
                 flex: 1,
                 padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: uploading ? '#9ca3af' : '#ec4899',
-                color: 'white',
-                fontSize: '16px',
-                cursor: uploading ? 'not-allowed' : 'pointer'
-              }}
+                opacity: uploading ? 0.6 : 1
+              })}
             >
-              {uploading ? 'アップロード中...' : '追加'}
+              {uploading ? '保存中...' : '保存'}
             </button>
           </div>
         </form>
@@ -923,7 +972,7 @@ function AddPlaceModal({ onClose }) {
     </div>
   )
 }
-
+// EditPlaceModal Component
 function EditPlaceModal({ place, onClose }) {
   const { updatePlace, uploadPhotos, deletePhoto } = useStore()
   const [formData, setFormData] = useState({
@@ -936,61 +985,106 @@ function EditPlaceModal({ place, onClose }) {
     visited: place.visited || false
   })
   const [existingPhotos, setExistingPhotos] = useState(place.photos || [])
-  const [newPhotoFiles, setNewPhotoFiles] = useState([])
-  const [newPhotoPreviews, setNewPhotoPreviews] = useState([])
+  const [newPhotos, setNewPhotos] = useState([])
   const [uploading, setUploading] = useState(false)
 
-  const handleNewPhotoChange = (e) => {
-    const files = Array.from(e.target.files || [])
-    setNewPhotoFiles(prev => [...prev, ...files])
-    
-    files.forEach(file => {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setNewPhotoPreviews(prev => [...prev, reader.result])
-      }
-      reader.readAsDataURL(file)
-    })
-  }
-
-  const removeExistingPhoto = async (photoUrl, index) => {
-    await deletePhoto(photoUrl)
-    setExistingPhotos(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const removeNewPhoto = (index) => {
-    setNewPhotoFiles(prev => prev.filter((_, i) => i !== index))
-    setNewPhotoPreviews(prev => prev.filter((_, i) => i !== index))
-  }
+  // Google Places Autocomplete state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [predictions, setPredictions] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setUploading(true)
 
+    let finalPhotos = [...existingPhotos]
+
+    if (newPhotos.length > 0) {
+      const uploadedUrls = await uploadPhotos(newPhotos, place.id)
+      finalPhotos = [...finalPhotos, ...uploadedUrls]
+    }
+
+    await updatePlace(place.id, {
+      ...formData,
+      photos: finalPhotos,
+      visited_date: formData.visited && !place.visited ? new Date().toISOString() : place.visited_date
+    })
+
+    setUploading(false)
+    onClose()
+  }
+
+  const handlePhotoChange = (e) => {
+    const files = Array.from(e.target.files)
+    setNewPhotos(prev => [...prev, ...files])
+  }
+
+  const removeNewPhoto = (index) => {
+    setNewPhotos(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const removeExistingPhoto = async (photoUrl) => {
+    if (window.confirm('この写真を削除しますか？')) {
+      await deletePhoto(photoUrl)
+      setExistingPhotos(prev => prev.filter(url => url !== photoUrl))
+    }
+  }
+
+  // Google Places Autocomplete
+  const searchPlaces = async (query) => {
+    if (query.length < 3) {
+      setPredictions([])
+      return
+    }
+
+    setIsSearching(true)
     try {
-      let allPhotoUrls = [...existingPhotos]
-
-      if (newPhotoFiles.length > 0) {
-        const uploadedUrls = await uploadPhotos(newPhotoFiles, place.id)
-        allPhotoUrls = [...allPhotoUrls, ...uploadedUrls]
+      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&language=ja&components=country:jp&key=${apiKey}`
+      )
+      const data = await response.json()
+      
+      if (data.predictions) {
+        setPredictions(data.predictions)
       }
-
-      const { error } = await updatePlace(place.id, {
-        ...formData,
-        photos: allPhotoUrls
-      })
-
-      if (error) {
-        alert('エラーが発生しました')
-        console.error(error)
-      } else {
-        onClose()
-      }
-    } catch (err) {
-      alert('エラーが発生しました')
-      console.error(err)
+    } catch (error) {
+      console.error('Place search error:', error)
     } finally {
-      setUploading(false)
+      setIsSearching(false)
+    }
+  }
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    searchPlaces(query)
+  }
+
+  const selectPlace = async (placeId) => {
+    try {
+      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&language=ja&fields=name,formatted_address,geometry&key=${apiKey}`
+      )
+      const data = await response.json()
+      
+      if (data.result) {
+        const result = data.result
+        const addressParts = result.formatted_address.split(' ')
+        
+        setFormData(prev => ({
+          ...prev,
+          name: result.name,
+          address: result.formatted_address,
+          station: addressParts[0] || ''
+        }))
+        
+        setSearchQuery('')
+        setPredictions([])
+      }
+    } catch (error) {
+      console.error('Place details error:', error)
     }
   }
 
@@ -1001,172 +1095,231 @@ function EditPlaceModal({ place, onClose }) {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(74, 63, 53, 0.7)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
       padding: '16px'
     }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '24px',
-        maxWidth: '500px',
+      <div style={mergeGhibliStyles(ghibliStyles.card, {
         width: '100%',
+        maxWidth: '500px',
         maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>場所を編集</h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '4px'
-            }}
-          >
-            <X size={24} />
-          </button>
-        </div>
+        overflow: 'auto',
+        padding: '24px',
+        position: 'relative'
+      })}>
+        <button
+          onClick={onClose}
+          style={mergeGhibliStyles(ghibliStyles.button, {
+            position: 'absolute',
+            top: '16px',
+            right: '16px',
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0
+          })}
+        >
+          <X size={20} />
+        </button>
+
+        <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px', fontWeight: '600', color: '#4A3F35' }}>
+          場所を編集
+        </h2>
 
         <form onSubmit={handleSubmit}>
+          {/* Google Places Search */}
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              場所名 *
+            <label style={commonStyles.label}>
+              Google検索
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="場所を検索..."
+                style={mergeGhibliStyles(ghibliStyles.input, {
+                  width: '100%',
+                  boxSizing: 'border-box'
+                })}
+              />
+              {isSearching && (
+                <div style={{ 
+                  position: 'absolute', 
+                  right: '12px', 
+                  top: '12px',
+                  color: '#8B7355' 
+                }}>
+                  検索中...
+                </div>
+              )}
+              {predictions.length > 0 && (
+                <div style={mergeGhibliStyles(ghibliStyles.card, {
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '4px',
+                  maxHeight: '200px',
+                  overflow: 'auto',
+                  zIndex: 1001,
+                  padding: '8px'
+                })}>
+                  {predictions.map((prediction) => (
+                    <div
+                      key={prediction.place_id}
+                      onClick={() => selectPlace(prediction.place_id)}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        marginBottom: '4px',
+                        backgroundColor: '#FAF8F3',
+                        border: '2px solid transparent',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#F5F1E8'
+                        e.currentTarget.style.borderColor = '#C9A87C'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#FAF8F3'
+                        e.currentTarget.style.borderColor = 'transparent'
+                      }}
+                    >
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3F35', marginBottom: '2px' }}>
+                        {prediction.structured_formatting.main_text}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#8B7355' }}>
+                        {prediction.structured_formatting.secondary_text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={commonStyles.label}>
+              場所名 <span style={{ color: '#E8B5B5' }}>*</span>
             </label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
                 boxSizing: 'border-box'
-              }}
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              カテゴリー *
+            <label style={commonStyles.label}>
+              カテゴリー
             </label>
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
+                boxSizing: 'border-box',
+                cursor: 'pointer'
+              })}
             >
-              <option>ご飯</option>
-              <option>カフェ</option>
-              <option>おでかけ(外)</option>
-              <option>おでかけ(室内)</option>
-              <option>旅行</option>
+              <option value="ご飯">ご飯</option>
+              <option value="カフェ">カフェ</option>
+              <option value="おでかけ(外)">おでかけ(外)</option>
+              <option value="おでかけ(室内)">おでかけ(室内)</option>
+              <option value="旅行">旅行</option>
             </select>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               季節
             </label>
             <select
               value={formData.season}
               onChange={(e) => setFormData({ ...formData, season: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                boxSizing: 'border-box'
-              }}
+                boxSizing: 'border-box',
+                cursor: 'pointer'
+              })}
             >
-              <option>通年</option>
-              <option>春</option>
-              <option>夏</option>
-              <option>秋</option>
-              <option>冬</option>
+              <option value="通年">通年</option>
+              <option value="春">春</option>
+              <option value="夏">夏</option>
+              <option value="秋">秋</option>
+              <option value="冬">冬</option>
             </select>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               最寄り駅
             </label>
             <input
               type="text"
               value={formData.station}
               onChange={(e) => setFormData({ ...formData, station: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
                 boxSizing: 'border-box'
-              }}
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               住所
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
                 boxSizing: 'border-box'
-              }}
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+            <label style={commonStyles.label}>
               メモ
             </label>
             <textarea
               value={formData.memo}
               onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
               rows={3}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
+                boxSizing: 'border-box',
                 resize: 'vertical',
-                boxSizing: 'border-box'
-              }}
+                fontFamily: 'inherit'
+              })}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              既存の写真
+            <label style={commonStyles.label}>
+              写真
             </label>
-            {existingPhotos.length > 0 ? (
+            
+            {existingPhotos.length > 0 && (
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                {existingPhotos.map((photoUrl, idx) => (
-                  <div key={idx} style={{ position: 'relative' }}>
+                {existingPhotos.map((photoUrl, index) => (
+                  <div key={index} style={{ position: 'relative' }}>
                     <img
                       src={photoUrl}
                       alt=""
@@ -1174,12 +1327,13 @@ function EditPlaceModal({ place, onClose }) {
                         width: '80px',
                         height: '80px',
                         objectFit: 'cover',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        border: '2px solid #C9A87C'
                       }}
                     />
                     <button
                       type="button"
-                      onClick={() => removeExistingPhoto(photoUrl, idx)}
+                      onClick={() => removeExistingPhoto(photoUrl)}
                       style={{
                         position: 'absolute',
                         top: '-8px',
@@ -1187,59 +1341,58 @@ function EditPlaceModal({ place, onClose }) {
                         width: '24px',
                         height: '24px',
                         borderRadius: '50%',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
+                        border: '2px solid #8B7355',
+                        backgroundColor: '#E8B5B5',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '16px'
+                        cursor: 'pointer',
+                        padding: 0
                       }}
                     >
-                      ×
+                      <X size={14} color="#4A3F35" />
                     </button>
                   </div>
                 ))}
               </div>
-            ) : (
-              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '12px' }}>写真がありません</p>
             )}
 
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              新しい写真を追加
-            </label>
             <input
               type="file"
-              accept="image/*"
               multiple
-              onChange={handleNewPhotoChange}
+              accept="image/*"
+              onChange={handlePhotoChange}
               style={{
+                display: 'block',
                 width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
+                padding: '8px',
                 fontSize: '14px',
-                boxSizing: 'border-box'
+                color: '#4A3F35',
+                border: '2px solid #C9A87C',
+                borderRadius: '8px',
+                backgroundColor: '#FAF8F3',
+                cursor: 'pointer'
               }}
             />
-            {newPhotoPreviews.length > 0 && (
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-                {newPhotoPreviews.map((preview, idx) => (
-                  <div key={idx} style={{ position: 'relative' }}>
+            
+            {newPhotos.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                {newPhotos.map((photo, index) => (
+                  <div key={index} style={{ position: 'relative' }}>
                     <img
-                      src={preview}
+                      src={URL.createObjectURL(photo)}
                       alt=""
                       style={{
                         width: '80px',
                         height: '80px',
                         objectFit: 'cover',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        border: '2px solid #C9A87C'
                       }}
                     />
                     <button
                       type="button"
-                      onClick={() => removeNewPhoto(idx)}
+                      onClick={() => removeNewPhoto(index)}
                       style={{
                         position: 'absolute',
                         top: '-8px',
@@ -1247,17 +1400,16 @@ function EditPlaceModal({ place, onClose }) {
                         width: '24px',
                         height: '24px',
                         borderRadius: '50%',
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        cursor: 'pointer',
+                        border: '2px solid #8B7355',
+                        backgroundColor: '#E8B5B5',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '16px'
+                        cursor: 'pointer',
+                        padding: 0
                       }}
                     >
-                      ×
+                      <X size={14} color="#4A3F35" />
                     </button>
                   </div>
                 ))}
@@ -1265,37 +1417,44 @@ function EditPlaceModal({ place, onClose }) {
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', paddingBottom: '20px' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={formData.visited}
+                onChange={(e) => setFormData({ ...formData, visited: e.target.checked })}
+                style={{ 
+                  width: '18px', 
+                  height: '18px',
+                  cursor: 'pointer',
+                  accentColor: '#C9A87C'
+                }}
+              />
+              <span style={{ fontSize: '14px', color: '#4A3F35' }}>行った</span>
+            </label>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.button, {
                 flex: 1,
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #e5e7eb',
-                backgroundColor: 'white',
-                fontSize: '16px',
-                cursor: 'pointer'
-              }}
+                padding: '12px'
+              })}
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={uploading}
-              style={{
+              style={mergeGhibliStyles(ghibliStyles.buttonPink, {
                 flex: 1,
                 padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: uploading ? '#9ca3af' : '#ec4899',
-                color: 'white',
-                fontSize: '16px',
-                cursor: uploading ? 'not-allowed' : 'pointer'
-              }}
+                opacity: uploading ? 0.6 : 1
+              })}
             >
-              {uploading ? 'アップロード中...' : '保存'}
+              {uploading ? '保存中...' : '保存'}
             </button>
           </div>
         </form>

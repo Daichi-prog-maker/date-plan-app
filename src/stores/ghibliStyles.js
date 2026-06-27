@@ -1,3 +1,4 @@
+// ghibliStyles.js の完全版
 // ジブリ風スタイルヘルパー
 export const ghibliStyles = {
   card: {
@@ -53,5 +54,42 @@ export const ghibliStyles = {
     border: '3px solid #8B7355',
     borderRadius: '25px',
     boxShadow: '0 3px 6px rgba(139, 115, 85, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+  }
+}
+
+// スタイルをマージするヘルパー
+export const mergeGhibliStyles = (baseStyle, customStyles = {}) => ({
+  ...baseStyle,
+  ...customStyles
+})
+
+// よく使うスタイルの組み合わせ
+export const commonStyles = {
+  label: {
+    display: 'block',
+    marginBottom: '6px',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#4A3F35'
+  },
+  searchBar: {
+    ...ghibliStyles.searchBox,
+    width: '100%',
+    height: '48px',
+    paddingLeft: '40px',
+    boxSizing: 'border-box'
+  },
+  iconButton: {
+    ...ghibliStyles.buttonPink,
+    width: '48px',
+    height: '48px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+  filterButton: {
+    ...ghibliStyles.button,
+    padding: '8px 16px'
   }
 }

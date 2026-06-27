@@ -245,5 +245,5 @@ function EditPlaceModal({ place, onClose }) {
         </form>
       </div>
     </div>
-  )
-}
+    }
+}))

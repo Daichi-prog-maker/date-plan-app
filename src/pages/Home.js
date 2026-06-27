@@ -609,81 +609,10 @@ function AddPlaceModal({ onClose }) {
   const [photoFiles, setPhotoFiles] = useState([])
   const [photoPreviews, setPhotoPreviews] = useState([])
   const [uploading, setUploading] = useState(false)
-  const [searching, setSearching] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-
-  // Google Places APIで場所を検索
-  const handleGoogleSearch = async () => {
-    if (!searchQuery.trim()) {
-      alert('検索キーワードを入力してください')
-      return
-    }
-
-    setSearching(true)
-
-    try {
-      // Google Maps APIがロードされているか確認
-      if (!window.google || !window.google.maps || !window.google.maps.places) {
-        await loadGoogleMapsAPI()
-      }
-
-      // Place Autocomplete Service を使用
-      const service = new window.google.maps.places.AutocompleteService()
-      
-      service.getPlacePredictions(
-        {
-          input: searchQuery,
-          componentRestrictions: { country: 'jp' },
-          language: 'ja'
-        },
-        async (predictions, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length > 0) {
-            // 最初の結果を使用
-            const placeId = predictions[0].place_id
-            
-            // Place Details を取得
-            const detailsService = new window.google.maps.places.PlacesService(document.createElement('div'))
-            detailsService.getDetails(
-              {
-                placeId: placeId,
-                fields: ['name', 'formatted_address', 'geometry'],
-                language: 'ja'
-              },
-              async (place, detailsStatus) => {
-                if (detailsStatus === window.google.maps.places.PlacesServiceStatus.OK) {
-                  // 最寄り駅を検索
-                  const station = await findNearestStation(
-                    place.geometry.location.lat(),
-                    place.geometry.location.lng()
-                  )
-
-                  // フォームに自動入力
-                  setFormData(prev => ({
-                    ...prev,
-                    name: place.name || searchQuery,
-                    address: place.formatted_address || '',
-                    station: station
-                  }))
-                  setSearchQuery('')
-                  alert('場所情報を自動入力しました！')
-                } else {
-                  alert('場所の詳細情報を取得できませんでした')
-                }
-                setSearching(false)
-              }
-            )
-          } else {
-            alert('検索結果が見つかりませんでした')
-            setSearching(false)
-          }
-        }
-      )
-    } catch (error) {
-      console.error('Search error:', error)
-      alert('検索中にエラーが発生しました')
-      setSearching(false)
-    }
-  }
+  const [predictions, setPredictions] = useState([])
+  const [showPredictions, setShowPredictions] = useState(false)
+  const [loadingPredictions, setLoadingPredictions] = useState(false)
 
   // Google Maps APIをロード
   const loadGoogleMapsAPI = () => {
@@ -709,6 +638,51 @@ function AddPlaceModal({ onClose }) {
     })
   }
 
+  // 検索クエリが変更されたら予測候補を取得
+  useEffect(() => {
+    const fetchPredictions = async () => {
+      if (searchQuery.length < 3) {
+        setPredictions([])
+        setShowPredictions(false)
+        return
+      }
+
+      setLoadingPredictions(true)
+
+      try {
+        if (!window.google || !window.google.maps || !window.google.maps.places) {
+          await loadGoogleMapsAPI()
+        }
+
+        const service = new window.google.maps.places.AutocompleteService()
+        
+        service.getPlacePredictions(
+          {
+            input: searchQuery,
+            componentRestrictions: { country: 'jp' },
+            language: 'ja'
+          },
+          (results, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+              setPredictions(results)
+              setShowPredictions(true)
+            } else {
+              setPredictions([])
+              setShowPredictions(false)
+            }
+            setLoadingPredictions(false)
+          }
+        )
+      } catch (error) {
+        console.error('Error fetching predictions:', error)
+        setLoadingPredictions(false)
+      }
+    }
+
+    const timeoutId = setTimeout(fetchPredictions, 300) // デバウンス
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
+
   // 最寄り駅を検索
   const findNearestStation = async (lat, lng) => {
     return new Promise((resolve) => {
@@ -729,6 +703,47 @@ function AddPlaceModal({ onClose }) {
         }
       )
     })
+  }
+
+  // 予測候補を選択
+  const handleSelectPrediction = async (prediction) => {
+    setShowPredictions(false)
+    setSearchQuery('')
+    setLoadingPredictions(true)
+
+    try {
+      const detailsService = new window.google.maps.places.PlacesService(document.createElement('div'))
+      
+      detailsService.getDetails(
+        {
+          placeId: prediction.place_id,
+          fields: ['name', 'formatted_address', 'geometry'],
+          language: 'ja'
+        },
+        async (place, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+            const station = await findNearestStation(
+              place.geometry.location.lat(),
+              place.geometry.location.lng()
+            )
+
+            setFormData(prev => ({
+              ...prev,
+              name: place.name,
+              address: place.formatted_address || '',
+              station: station
+            }))
+          } else {
+            alert('場所の詳細情報を取得できませんでした')
+          }
+          setLoadingPredictions(false)
+        }
+      )
+    } catch (error) {
+      console.error('Error getting place details:', error)
+      alert('エラーが発生しました')
+      setLoadingPredictions(false)
+    }
   }
 
   const handlePhotoChange = (e) => {
@@ -819,53 +834,84 @@ function AddPlaceModal({ onClose }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Google検索フィールド */}
-          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#fef3f9', borderRadius: '8px' }}>
+          {/* Google検索オートコンプリート */}
+          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#fef3f9', borderRadius: '8px', position: 'relative' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#ec4899' }}>
-              🔍 Google検索で自動入力
+              🔍 場所を検索（3文字以上で候補表示）
             </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="例: 新宿 スターバックス"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleGoogleSearch()
-                  }
-                }}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  border: '1px solid #fce7f3',
-                  borderRadius: '8px',
-                  fontSize: '14px'
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleGoogleSearch}
-                disabled={searching || !searchQuery.trim()}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: searching ? '#9ca3af' : '#ec4899',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  cursor: searching ? 'not-allowed' : 'pointer',
-                  whiteSpace: 'nowrap',
-                  fontWeight: '500'
-                }}
-              >
-                {searching ? '検索中...' : '検索'}
-              </button>
-            </div>
-            <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px', marginBottom: 0 }}>
-              場所を検索すると、名前・住所・最寄り駅が自動で入力されます
-            </p>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => searchQuery.length >= 3 && predictions.length > 0 && setShowPredictions(true)}
+              placeholder="例: 新宿 スターバックス"
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #fce7f3',
+                borderRadius: '8px',
+                fontSize: '14px',
+                boxSizing: 'border-box'
+              }}
+            />
+            
+            {/* 予測候補ドロップダウン */}
+            {showPredictions && predictions.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: '12px',
+                right: '12px',
+                marginTop: '4px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                zIndex: 1000
+              }}>
+                {predictions.map((prediction, index) => (
+                  <div
+                    key={prediction.place_id}
+                    onClick={() => handleSelectPrediction(prediction)}
+                    style={{
+                      padding: '12px',
+                      cursor: 'pointer',
+                      borderBottom: index < predictions.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef3f9'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                  >
+                    <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827', marginBottom: '2px' }}>
+                      {prediction.structured_formatting.main_text}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {prediction.structured_formatting.secondary_text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {loadingPredictions && (
+              <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px', marginBottom: 0 }}>
+                読み込み中...
+              </p>
+            )}
+            
+            {!loadingPredictions && searchQuery.length > 0 && searchQuery.length < 3 && (
+              <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px', marginBottom: 0 }}>
+                あと{3 - searchQuery.length}文字入力すると候補が表示されます
+              </p>
+            )}
+
+            {!loadingPredictions && searchQuery.length >= 3 && predictions.length === 0 && (
+              <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px', marginBottom: 0 }}>
+                候補が見つかりませんでした
+              </p>
+            )}
           </div>
 
           <div style={{ marginBottom: '16px' }}>
@@ -1088,6 +1134,21 @@ function AddPlaceModal({ onClose }) {
             </button>
           </div>
         </form>
+
+        {/* 予測候補が表示されている場合、背景クリックで閉じる */}
+        {showPredictions && (
+          <div 
+            onClick={() => setShowPredictions(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999
+            }}
+          />
+        )}
       </div>
     </div>
   )

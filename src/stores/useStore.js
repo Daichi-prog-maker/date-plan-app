@@ -15,7 +15,7 @@ export default function Home() {
   const [searchText, setSearchText] = useState('')
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
-  const [sortBy, setSortBy] = useState('created_at')
+  const [sortBy, setSortBy] = useState('created_at') // created_at, name, favorite
 
   useEffect(() => {
     stores.fetchPlaces()
@@ -33,6 +33,7 @@ export default function Home() {
     return categoryMatch && seasonMatch && visitedMatch && searchMatch
   })
 
+  // ソート処理
   filteredPlaces = [...filteredPlaces].sort((a, b) => {
     if (sortBy === 'favorite') {
       if (a.is_favorite === b.is_favorite) return new Date(b.created_at) - new Date(a.created_at)
@@ -264,6 +265,8 @@ function AddPlaceModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('=== AddPlace Submit開始 ===')
+    console.log('formData:', formData)
     
     if (!formData.name.trim()) {
       alert('場所の名前を入力してください')
@@ -272,7 +275,9 @@ function AddPlaceModal({ onClose }) {
     
     let photo_url = null
     if (formData.photoFile) {
+      console.log('写真をアップロード中...')
       const result = await stores.uploadPhoto(formData.photoFile, 'new')
+      console.log('アップロード結果:', result)
       if (!result.error) {
         photo_url = result.data
       }
@@ -283,7 +288,9 @@ function AddPlaceModal({ onClose }) {
     delete placeData.photoPreview
     if (photo_url) placeData.photo_url = photo_url
     
+    console.log('保存するデータ:', placeData)
     await stores.addPlace(placeData)
+    console.log('=== 保存完了 ===')
     onClose()
   }
 
@@ -383,8 +390,7 @@ function AddPlaceModal({ onClose }) {
                 }
               }}
               style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            />
-            {formData.photoPreview && (
+            />{formData.photoPreview && (
               <div style={{ position: 'relative', marginTop: '0.5rem' }}>
                 <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} />
                 <button
@@ -434,7 +440,9 @@ function EditPlaceModal({ place, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+    console.log('=== EditPlace Submit開始 ===')
+    console.log('formData:', formData)
+    console.log('place.id:', place.id)
     if (!formData.name.trim()) {
       alert('場所の名前を入力してください')
       return
@@ -442,6 +450,7 @@ function EditPlaceModal({ place, onClose }) {
     
     let photo_url = formData.photoPreview
     if (formData.photoFile) {
+      console.log('写真をアップロード中...')
       const result = await stores.uploadPhoto(formData.photoFile, place.id)
       if (!result.error) {
         photo_url = result.data
@@ -537,39 +546,6 @@ function EditPlaceModal({ place, onClose }) {
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onloadend = () => {
-                    setFormData({...formData, photoFile: file, photoPreview: reader.result})
-                  }
-                  reader.readAsDataURL(file)
-                }
-              }}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            />
-            {formData.photoPreview && (
-              <div style={{ position: 'relative', marginTop: '0.5rem' }}>
-                <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} />
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})}
-                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 
-                  onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})}
-                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  削除
-                </button>
-              </div>
-            )}
-          </div>
-
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
             <button
               type="button"
@@ -589,4 +565,4 @@ function EditPlaceModal({ place, onClose }) {
       </div>
     </div>
   )
-}
+}このURLにアクセスして、コンテンツをコピーして、GitHubのHome.jsに貼り付けてください。

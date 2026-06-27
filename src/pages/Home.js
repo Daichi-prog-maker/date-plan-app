@@ -1,422 +1,710 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
-import { Plus, MapPin, Check, Trash2, Search, X, Edit } from 'lucide-react'
-
-const CATEGORIES = ['ご飯', 'カフェ', 'おでかけ(外)', 'おでかけ(室内)', '旅行']
-const SEASONS = ['春', '夏', '秋', '冬', '通年']
+import { Plus, Search, Trash2, X, MapPin, Calendar, Tag } from 'lucide-react'
 
 export default function Home() {
-  const stores = useStore()
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [editingPlace, setEditingPlace] = useState(null)
-  const [selectedCategory, setSelectedCategory] = useState('すべて')
-  const [selectedSeason, setSelectedSeason] = useState('すべて')
-  const [visitedFilter, setVisitedFilter] = useState('すべて')
-  const [searchText, setSearchText] = useState('')
-  const [selectMode, setSelectMode] = useState(false)
+  const { places, loading, fetchPlaces, deletePlace, deletePlaces } = useStore()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedSeason, setSelectedSeason] = useState('all')
+  const [showVisitedOnly, setShowVisitedOnly] = useState(false)
+  const [sortBy, setSortBy] = useState('newest')
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
-  const [sortBy, setSortBy] = useState('created_at') // created_at, name, favorite
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingPlace, setEditingPlace] = useState(null)
 
   useEffect(() => {
-    stores.fetchPlaces()
-  }, [])
+    fetchPlaces()
+  }, [fetchPlaces])
 
-  let filteredPlaces = stores.places.filter(place => {
-    const categoryMatch = selectedCategory === 'すべて' || place.category === selectedCategory
-    const seasonMatch = selectedSeason === 'すべて' || place.season === selectedSeason
-    const visitedMatch = visitedFilter === 'すべて' || 
-      (visitedFilter === '訪問済み' ? place.visited : !place.visited)
-    const searchMatch = searchText === '' || 
-      place.name.includes(searchText) || 
-      (place.address && place.address.includes(searchText)) ||
-      (place.station && place.station.includes(searchText))
-    return categoryMatch && seasonMatch && visitedMatch && searchMatch
+  const categories = ['all', 'ご飯', 'カフェ', 'おでかけ(外)', 'おでかけ(室内)', '旅行']
+  const seasons = ['all', '春', '夏', '秋', '冬', '通年']
+
+  let filteredPlaces = places.filter(place => {
+    const matchesSearch = 
+      place.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      place.station?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      place.address?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || place.category === selectedCategory
+    const matchesSeason = selectedSeason === 'all' || place.season === selectedSeason
+    const matchesVisited = !showVisitedOnly || place.visited
+    return matchesSearch && matchesCategory && matchesSeason && matchesVisited
   })
 
-  // ソート処理
-  filteredPlaces = [...filteredPlaces].sort((a, b) => {
-    if (sortBy === 'favorite') {
-      if (a.is_favorite === b.is_favorite) return new Date(b.created_at) - new Date(a.created_at)
-      return a.is_favorite ? -1 : 1
-    }
-    if (sortBy === 'name') return a.name.localeCompare(b.name, 'ja')
-    return new Date(b.created_at) - new Date(a.created_at)
-  })
-
-  const toggleVisited = async (place) => {
-    await stores.updatePlace(place.id, { 
-      visited: !place.visited,
-      visited_date: !place.visited ? new Date().toISOString().split('T')[0] : null
-    })
+  if (sortBy === 'name') {
+    filteredPlaces = [...filteredPlaces].sort((a, b) => a.name.localeCompare(b.name, 'ja'))
   }
 
-  const toggleSelect = (id) => {
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    )
+  const handleDelete = async (id) => {
+    if (window.confirm('この場所を削除しますか？')) {
+      await deletePlace(id)
+    }
   }
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return
-    const count = selectedIds.length
-    if (window.confirm(count + '件の場所を削除しますか？')) {
-      await stores.deletePlaces(selectedIds)
+    if (window.confirm(`選択した${selectedIds.length}件の場所を削除しますか？`)) {
+      await deletePlaces(selectedIds)
       setSelectedIds([])
-      setSelectMode(false)
+      setIsSelectionMode(false)
     }
   }
 
+  const toggleSelection = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    )
+  }
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fce7f3', paddingBottom: '8rem' }}>
-      <div style={{ backgroundColor: 'white', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 10 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ec4899', textAlign: 'center', marginBottom: '1rem' }}>
-          ○○に行きたいんじゃ！
-        </h1>
-        
-        <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
-          <Search style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={20} />
+    <div style={{ padding: '16px', paddingBottom: '80px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Search style={{ position: 'absolute', left: '12px', top: '12px', color: '#9ca3af' }} size={20} />
           <input
             type="text"
-            placeholder="場所や駅名で検索..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: '100%', paddingLeft: '2.5rem', paddingRight: '1rem', paddingTop: '0.5rem', paddingBottom: '0.5rem', border: '1px solid #e5e7eb', borderRadius: '9999px', outline: 'none' }}
+            placeholder="場所を検索..."
+            style={{
+              width: '100%',
+              padding: '10px 10px 10px 40px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '14px'
+            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
-            <option value="すべて">すべて</option>
-            {CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          <select
-            value={selectedSeason}
-            onChange={(e) => setSelectedSeason(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
-            <option value="すべて">すべて</option>
-            {SEASONS.map(season => (
-              <option key={season} value={season}>{season}</option>
-            ))}
-          </select>
-          <select
-            value={visitedFilter}
-            onChange={(e) => setVisitedFilter(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
-            <option value="すべて">すべて</option>
-            <option value="未訪問">未訪問</option>
-            <option value="訪問済み">訪問済み</option>
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
-            <option value="created_at">新しい順</option>
-            <option value="name">名前順</option>
-            <option value="favorite">お気に入り順</option>
-          </select>
-        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            backgroundColor: '#ec4899',
+            color: 'white',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer'
+          }}
+        >
+          <Plus size={24} />
+        </button>
       </div>
 
-      <div style={{ maxWidth: '56rem', margin: '0 auto', padding: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '8px' }}>
+        {categories.map(cat => (
           <button
-            onClick={() => setShowAddModal(true)}
-            style={{ flex: 1, backgroundColor: '#ec4899', color: 'white', padding: '0.75rem', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-          >
-            <Plus size={20} />
-            新しい場所を追加
-          </button>
-          <button
-            onClick={() => {
-              setSelectMode(!selectMode)
-              setSelectedIds([])
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '20px',
+              border: selectedCategory === cat ? 'none' : '1px solid #ec4899',
+              backgroundColor: selectedCategory === cat ? '#ec4899' : 'white',
+              color: selectedCategory === cat ? 'white' : '#ec4899',
+              fontSize: '14px',
+              whiteSpace: 'nowrap',
+              cursor: 'pointer'
             }}
-            style={{ padding: '0.75rem 1rem', borderRadius: '0.75rem', fontWeight: 'bold', border: selectMode ? 'none' : '1px solid #d1d5db', backgroundColor: selectMode ? '#6b7280' : 'white', color: selectMode ? 'white' : '#374151', cursor: 'pointer' }}
           >
-            {selectMode ? 'キャンセル' : '選択'}
+            {cat === 'all' ? 'すべて' : cat}
           </button>
-        </div>
+        ))}
+      </div>
 
-        {selectMode && selectedIds.length > 0 && (
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '8px' }}>
+        {seasons.map(season => (
+          <button
+            key={season}
+            onClick={() => setSelectedSeason(season)}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '20px',
+              border: selectedSeason === season ? 'none' : '1px solid #ec4899',
+              backgroundColor: selectedSeason === season ? '#ec4899' : 'white',
+              color: selectedSeason === season ? 'white' : '#ec4899',
+              fontSize: '14px',
+              whiteSpace: 'nowrap',
+              cursor: 'pointer'
+            }}
+          >
+            {season === 'all' ? 'すべて' : season}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setShowVisitedOnly(!showVisitedOnly)}
+          style={{
+            padding: '6px 16px',
+            borderRadius: '20px',
+            border: showVisitedOnly ? 'none' : '1px solid #ec4899',
+            backgroundColor: showVisitedOnly ? '#ec4899' : 'white',
+            color: showVisitedOnly ? 'white' : '#ec4899',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          行った場所のみ
+        </button>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          style={{
+            padding: '6px 16px',
+            borderRadius: '20px',
+            border: '1px solid #ec4899',
+            backgroundColor: 'white',
+            color: '#ec4899',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="newest">新しい順</option>
+          <option value="name">名前順</option>
+        </select>
+        <button
+          onClick={() => {
+            setIsSelectionMode(!isSelectionMode)
+            setSelectedIds([])
+          }}
+          style={{
+            padding: '6px 16px',
+            borderRadius: '20px',
+            border: isSelectionMode ? 'none' : '1px solid #ec4899',
+            backgroundColor: isSelectionMode ? '#ec4899' : 'white',
+            color: isSelectionMode ? 'white' : '#ec4899',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          {isSelectionMode ? 'キャンセル' : '選択'}
+        </button>
+        {isSelectionMode && selectedIds.length > 0 && (
           <button
             onClick={handleBulkDelete}
-            style={{ width: '100%', backgroundColor: '#ef4444', color: 'white', padding: '0.75rem', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}
+            style={{
+              padding: '6px 16px',
+              borderRadius: '20px',
+              border: 'none',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
           >
-            <Trash2 size={20} />
-            {selectedIds.length}件を削除
+            <Trash2 size={16} />
+            削除 ({selectedIds.length})
           </button>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {filteredPlaces.map(place => (
-            <div
-              key={place.id}
-              onClick={() => selectMode && toggleSelect(place.id)}
-              style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', cursor: selectMode ? 'pointer' : 'default', border: selectedIds.includes(place.id) ? '2px solid #ec4899' : 'none' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                {selectMode && (
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(place.id)}
-                    onChange={() => toggleSelect(place.id)}
-                    style={{ marginTop: '0.25rem' }}
-                  />
-                )}
-                <div style={{ flex: 1 }}>
-                  {place.photo_url && (
-                    <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '0.75rem' }} />
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{place.name}</h3>
-                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-                        <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#fce7f3', color: '#db2777', borderRadius: '9999px' }}>
-                          {place.category}
-                        </span>
-                        {place.season && (
-                          <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#dbeafe', color: '#2563eb', borderRadius: '9999px' }}>
-                            {place.season}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      {!selectMode && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingPlace(place)
-                          }}
-                          style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fef3c7', color: '#f59e0b', cursor: 'pointer' }}
-                        >
-                          <Edit size={18} />
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleVisited(place)
-                        }}
-                        style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: place.visited ? '#d1fae5' : '#f3f4f6', color: place.visited ? '#059669' : '#9ca3af', cursor: 'pointer' }}
-                      >
-                        <Check size={18} />
-                      </button>
-                    </div>
-                  </div>
-                  {place.station && (
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <MapPin size={14} />
-                      {place.station}
-                    </p>
-                  )}
-                  {place.address && (
-                    <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>{place.address}</p>
-                  )}
-                  {place.memo && (
-                    <p style={{ fontSize: '0.875rem', color: '#374151', marginTop: '0.5rem' }}>{place.memo}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredPlaces.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '3rem 0', color: '#9ca3af' }}>
-            <p>まだ場所が登録されていません</p>
-            <p style={{ fontSize: '0.875rem' }}>「新しい場所を追加」から登録してみましょう！</p>
-          </div>
         )}
       </div>
 
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '32px' }}>
+          <div style={{ 
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #ec4899',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto'
+          }}></div>
+        </div>
+      ) : filteredPlaces.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
+          <p>場所が見つかりませんでした</p>
+          <p style={{ fontSize: '14px', marginTop: '8px' }}>右上の＋ボタンから追加してみましょう！</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '16px' }}>
+          {filteredPlaces.map(place => (
+            <PlaceCard
+              key={place.id}
+              place={place}
+              isSelectionMode={isSelectionMode}
+              isSelected={selectedIds.includes(place.id)}
+              onToggleSelection={() => toggleSelection(place.id)}
+              onEdit={() => {
+                setEditingPlace(place)
+                setShowEditModal(true)
+              }}
+              onDelete={() => handleDelete(place.id)}
+            />
+          ))}
+        </div>
+      )}
+
       {showAddModal && <AddPlaceModal onClose={() => setShowAddModal(false)} />}
-      {editingPlace && (
-        <EditPlaceModal 
-          place={editingPlace} 
-          onClose={() => setEditingPlace(null)} 
+      {showEditModal && editingPlace && (
+        <EditPlaceModal
+          place={editingPlace}
+          onClose={() => {
+            setShowEditModal(false)
+            setEditingPlace(null)
+          }}
         />
       )}
     </div>
   )
 }
 
+function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEdit, onDelete }) {
+  const { updatePlace } = useStore()
+
+  const toggleVisited = async (e) => {
+    e.stopPropagation()
+    await updatePlace(place.id, {
+      visited: !place.visited,
+      visited_date: !place.visited ? new Date().toISOString() : null
+    })
+  }
+
+  const photos = place.photos || []
+  const displayPhotos = photos.slice(0, 2)
+
+  return (
+    <div
+      onClick={isSelectionMode ? onToggleSelection : onEdit}
+      style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        padding: '16px',
+        cursor: 'pointer',
+        border: isSelected ? '2px solid #ec4899' : '2px solid transparent',
+        position: 'relative'
+      }}
+    >
+      {isSelectionMode && (
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          border: '2px solid #ec4899',
+          backgroundColor: isSelected ? '#ec4899' : 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {isSelected && <span style={{ color: 'white', fontSize: '16px' }}>✓</span>}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+        {displayPhotos.length > 0 && (
+          <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+            {displayPhotos.map((photoUrl, idx) => (
+              <img
+                key={idx}
+                src={photoUrl}
+                alt=""
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '4px',
+                  objectFit: 'cover'
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <div style={{ flex: 1 }}>
+          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+            {place.name}
+          </h3>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+            <span style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#fce7f3',
+              color: '#ec4899',
+              fontSize: '12px'
+            }}>
+              {place.category}
+            </span>
+            {place.season && (
+              <span style={{
+                padding: '2px 8px',
+                borderRadius: '12px',
+                backgroundColor: '#fef3c7',
+                color: '#f59e0b',
+                fontSize: '12px'
+              }}>
+                {place.season}
+              </span>
+            )}
+          </div>
+
+          {place.station && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>
+              <MapPin size={14} />
+              <span>{place.station}</span>
+            </div>
+          )}
+
+          {place.memo && (
+            <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+              {place.memo}
+            </p>
+          )}
+
+          {!isSelectionMode && (
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button
+                onClick={toggleVisited}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: place.visited ? '#22c55e' : '#e5e7eb',
+                  color: place.visited ? 'white' : '#6b7280',
+                  fontSize: '12px',
+                  cursor: 'pointer'
+                }}
+              >
+                {place.visited ? '✓ 行った' : '行ってない'}
+              </button>
+              {place.visited && place.visited_date && (
+                <span style={{ fontSize: '12px', color: '#9ca3af', alignSelf: 'center' }}>
+                  {new Date(place.visited_date).toLocaleDateString('ja-JP')}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AddPlaceModal({ onClose }) {
-  const stores = useStore()
+  const { addPlace, uploadPhotos } = useStore()
   const [formData, setFormData] = useState({
     name: '',
     category: 'ご飯',
-    address: '',
-    station: '',
-    memo: '',
     season: '通年',
-    photoFile: null,
-    photoPreview: null
+    station: '',
+    address: '',
+    memo: '',
+    visited: false
   })
+  const [photoFiles, setPhotoFiles] = useState([])
+  const [photoPreviews, setPhotoPreviews] = useState([])
+  const [uploading, setUploading] = useState(false)
+
+  const handlePhotoChange = (e) => {
+    const files = Array.from(e.target.files || [])
+    setPhotoFiles(prev => [...prev, ...files])
+    
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPhotoPreviews(prev => [...prev, reader.result])
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const removePhoto = (index) => {
+    setPhotoFiles(prev => prev.filter((_, i) => i !== index))
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('=== AddPlace Submit開始 ===')
-    console.log('formData:', formData)
-    
-    if (!formData.name.trim()) {
-      alert('場所の名前を入力してください')
-      return
-    }
-    
-    let photo_url = null
-    if (formData.photoFile) {
-      console.log('写真をアップロード中...')
-      const result = await stores.uploadPhoto(formData.photoFile, 'new')
-      console.log('アップロード結果:', result)
-      if (!result.error) {
-        photo_url = result.data
+    setUploading(true)
+
+    try {
+      const tempId = Date.now()
+      let photoUrls = []
+
+      if (photoFiles.length > 0) {
+        photoUrls = await uploadPhotos(photoFiles, tempId)
       }
+
+      const { data, error } = await addPlace({
+        ...formData,
+        photos: photoUrls
+      })
+
+      if (error) {
+        alert('エラーが発生しました')
+        console.error(error)
+      } else {
+        onClose()
+      }
+    } catch (err) {
+      alert('エラーが発生しました')
+      console.error(err)
+    } finally {
+      setUploading(false)
     }
-    
-    const placeData = { ...formData }
-    delete placeData.photoFile
-    delete placeData.photoPreview
-    if (photo_url) placeData.photo_url = photo_url
-    
-    console.log('保存するデータ:', placeData)
-    await stores.addPlace(placeData)
-    console.log('=== 保存完了 ===')
-    onClose()
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>新しい場所を追加</h2>
-          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '16px'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        maxWidth: '500px',
+        width: '100%',
+        maxHeight: '90vh',
+        overflowY: 'auto'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>新しい場所を追加</h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px'
+            }}
+          >
             <X size={24} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              場所名 *
+            </label>
             <input
               type="text"
+              required
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿カフェ"
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              カテゴリー *
+            </label>
             <select
               value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              <option>ご飯</option>
+              <option>カフェ</option>
+              <option>おでかけ(外)</option>
+              <option>おでかけ(室内)</option>
+              <option>旅行</option>
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              季節
+            </label>
+            <select
+              value={formData.season}
+              onChange={(e) => setFormData({ ...formData, season: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
+            >
+              <option>通年</option>
+              <option>春</option>
+              <option>夏</option>
+              <option>秋</option>
+              <option>冬</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              最寄り駅
+            </label>
             <input
               type="text"
               value={formData.station}
-              onChange={(e) => setFormData({...formData, station: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿駅"
+              onChange={(e) => setFormData({ ...formData, station: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              住所
+            </label>
             <input
               type="text"
               value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 東京都新宿区..."
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label>
-            <select
-              value={formData.season}
-              onChange={(e) => setFormData({...formData, season: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            >
-              {SEASONS.map(season => (
-                <option key={season} value={season}>{season}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              メモ
+            </label>
             <textarea
               value={formData.memo}
-              onChange={(e) => setFormData({...formData, memo: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              rows="3"
-              placeholder="例: インスタで見つけた！パンケーキが美味しそう"
+              onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
+              rows={3}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                resize: 'vertical'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              写真
+            </label>
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onloadend = () => {
-                    setFormData({...formData, photoFile: file, photoPreview: reader.result})
-                  }
-                  reader.readAsDataURL(file)
-                }
+              multiple
+              onChange={handlePhotoChange}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
               }}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            />{formData.photoPreview && (
-              <div style={{ position: 'relative', marginTop: '0.5rem' }}>
-                <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} />
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})}
-                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  削除
-                </button>
+            />
+            {photoPreviews.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                {photoPreviews.map((preview, idx) => (
+                  <div key={idx} style={{ position: 'relative' }}>
+                    <img
+                      src={preview}
+                      alt=""
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        objectFit: 'cover',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(idx)}
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{ flex: 1, padding: '0.75rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.75rem', fontWeight: 'bold', backgroundColor: 'white', cursor: 'pointer' }}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: 'white',
+                fontSize: '16px',
+                cursor: 'pointer'
+              }}
             >
               キャンセル
             </button>
             <button
               type="submit"
-              style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              disabled={uploading}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: uploading ? '#9ca3af' : '#ec4899',
+                color: 'white',
+                fontSize: '16px',
+                cursor: uploading ? 'not-allowed' : 'pointer'
+              }}
             >
-              追加
+              {uploading ? 'アップロード中...' : '追加'}
             </button>
           </div>
         </form>
@@ -426,139 +714,370 @@ function AddPlaceModal({ onClose }) {
 }
 
 function EditPlaceModal({ place, onClose }) {
-  const stores = useStore()
+  const { updatePlace, uploadPhotos, deletePhoto } = useStore()
   const [formData, setFormData] = useState({
     name: place.name || '',
     category: place.category || 'ご飯',
-    address: place.address || '',
-    station: place.station || '',
-    memo: place.memo || '',
     season: place.season || '通年',
-    photoFile: null,
-    photoPreview: place.photo_url || null
+    station: place.station || '',
+    address: place.address || '',
+    memo: place.memo || '',
+    visited: place.visited || false
   })
+  const [existingPhotos, setExistingPhotos] = useState(place.photos || [])
+  const [newPhotoFiles, setNewPhotoFiles] = useState([])
+  const [newPhotoPreviews, setNewPhotoPreviews] = useState([])
+  const [uploading, setUploading] = useState(false)
+
+  const handleNewPhotoChange = (e) => {
+    const files = Array.from(e.target.files || [])
+    setNewPhotoFiles(prev => [...prev, ...files])
+    
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setNewPhotoPreviews(prev => [...prev, reader.result])
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const removeExistingPhoto = async (photoUrl, index) => {
+    await deletePhoto(photoUrl)
+    setExistingPhotos(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const removeNewPhoto = (index) => {
+    setNewPhotoFiles(prev => prev.filter((_, i) => i !== index))
+    setNewPhotoPreviews(prev => prev.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('=== EditPlace Submit開始 ===')
-    console.log('formData:', formData)
-    console.log('place.id:', place.id)
-    if (!formData.name.trim()) {
-      alert('場所の名前を入力してください')
-      return
-    }
-    
-    let photo_url = formData.photoPreview
-    if (formData.photoFile) {
-      console.log('写真をアップロード中...')
-      const result = await stores.uploadPhoto(formData.photoFile, place.id)
-      if (!result.error) {
-        photo_url = result.data
+    setUploading(true)
+
+    try {
+      let allPhotoUrls = [...existingPhotos]
+
+      if (newPhotoFiles.length > 0) {
+        const uploadedUrls = await uploadPhotos(newPhotoFiles, place.id)
+        allPhotoUrls = [...allPhotoUrls, ...uploadedUrls]
       }
+
+      const { error } = await updatePlace(place.id, {
+        ...formData,
+        photos: allPhotoUrls
+      })
+
+      if (error) {
+        alert('エラーが発生しました')
+        console.error(error)
+      } else {
+        onClose()
+      }
+    } catch (err) {
+      alert('エラーが発生しました')
+      console.error(err)
+    } finally {
+      setUploading(false)
     }
-    
-    const placeData = { ...formData }
-    delete placeData.photoFile
-    delete placeData.photoPreview
-    placeData.photo_url = photo_url
-    
-    await stores.updatePlace(place.id, placeData)
-    onClose()
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>場所を編集</h2>
-          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '16px'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        maxWidth: '500px',
+        width: '100%',
+        maxHeight: '90vh',
+        overflowY: 'auto'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>場所を編集</h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px'
+            }}
+          >
             <X size={24} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              場所名 *
+            </label>
             <input
               type="text"
+              required
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿カフェ"
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              カテゴリー *
+            </label>
             <select
               value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              <option>ご飯</option>
+              <option>カフェ</option>
+              <option>おでかけ(外)</option>
+              <option>おでかけ(室内)</option>
+                            <option>旅行</option>
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              季節
+            </label>
+            <select
+              value={formData.season}
+              onChange={(e) => setFormData({ ...formData, season: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
+            >
+              <option>通年</option>
+              <option>春</option>
+              <option>夏</option>
+              <option>秋</option>
+              <option>冬</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              最寄り駅
+            </label>
             <input
               type="text"
               value={formData.station}
-              onChange={(e) => setFormData({...formData, station: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿駅"
+              onChange={(e) => setFormData({ ...formData, station: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              住所
+            </label>
             <input
               type="text"
               value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 東京都新宿区..."
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label>
-            <select
-              value={formData.season}
-              onChange={(e) => setFormData({...formData, season: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            >
-              {SEASONS.map(season => (
-                <option key={season} value={season}>{season}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              メモ
+            </label>
             <textarea
               value={formData.memo}
-              onChange={(e) => setFormData({...formData, memo: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              rows="3"
-              placeholder="例: インスタで見つけた！パンケーキが美味しそう"
+              onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
+              rows={3}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px',
+                resize: 'vertical'
+              }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              既存の写真
+            </label>
+            {existingPhotos.length > 0 ? (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                {existingPhotos.map((photoUrl, idx) => (
+                  <div key={idx} style={{ position: 'relative' }}>
+                    <img
+                      src={photoUrl}
+                      alt=""
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        objectFit: 'cover',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingPhoto(photoUrl, idx)}
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '12px' }}>写真がありません</p>
+            )}
+
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              新しい写真を追加
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleNewPhotoChange}
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
+            />
+            {newPhotoPreviews.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                {newPhotoPreviews.map((preview, idx) => (
+                  <div key={idx} style={{ position: 'relative' }}>
+                    <img
+                      src={preview}
+                      alt=""
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        objectFit: 'cover',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeNewPhoto(idx)}
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '16px'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{ flex: 1, padding: '0.75rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.75rem', fontWeight: 'bold', backgroundColor: 'white', cursor: 'pointer' }}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: 'white',
+                fontSize: '16px',
+                cursor: 'pointer'
+              }}
             >
               キャンセル
             </button>
             <button
               type="submit"
-              style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+              disabled={uploading}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: uploading ? '#9ca3af' : '#ec4899',
+                color: 'white',
+                fontSize: '16px',
+                cursor: uploading ? 'not-allowed' : 'pointer'
+              }}
             >
-              更新
+              {uploading ? 'アップロード中...' : '保存'}
             </button>
           </div>
         </form>
@@ -566,3 +1085,4 @@ function EditPlaceModal({ place, onClose }) {
     </div>
   )
 }
+

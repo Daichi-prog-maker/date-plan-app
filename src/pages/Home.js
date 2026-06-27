@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
-import { Plus, Search, Trash2, X, MapPin, Calendar, Tag, Filter } from 'lucide-react'
+import { Plus, Search, Trash2, X, MapPin, Calendar, Tag, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function Home() {
   const { places, loading, fetchPlaces, deletePlace, deletePlaces } = useStore()
@@ -120,6 +120,62 @@ export default function Home() {
         </button>
       </div>
 
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: '1px solid #ec4899',
+            backgroundColor: 'white',
+            color: '#ec4899',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          <option value="newest">新しい順</option>
+          <option value="name">名前順</option>
+        </select>
+        <button
+          onClick={() => {
+            setIsSelectionMode(!isSelectionMode)
+            setSelectedIds([])
+          }}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: isSelectionMode ? 'none' : '1px solid #ec4899',
+            backgroundColor: isSelectionMode ? '#ec4899' : 'white',
+            color: isSelectionMode ? 'white' : '#ec4899',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          {isSelectionMode ? 'キャンセル' : '選択'}
+        </button>
+        {isSelectionMode && selectedIds.length > 0 && (
+          <button
+            onClick={handleBulkDelete}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <Trash2 size={16} />
+            削除 ({selectedIds.length})
+          </button>
+        )}
+      </div>
+
       {showFilters && (
         <div style={{ 
           backgroundColor: 'white', 
@@ -180,28 +236,6 @@ export default function Home() {
             </select>
           </div>
 
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
-              並び順
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '14px',
-                backgroundColor: 'white',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="newest">新しい順</option>
-              <option value="name">名前順</option>
-            </select>
-          </div>
-
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setShowVisitedOnly(!showVisitedOnly)}
@@ -217,43 +251,6 @@ export default function Home() {
             >
               行った場所のみ
             </button>
-            <button
-              onClick={() => {
-                setIsSelectionMode(!isSelectionMode)
-                setSelectedIds([])
-              }}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: isSelectionMode ? 'none' : '1px solid #ec4899',
-                backgroundColor: isSelectionMode ? '#ec4899' : 'white',
-                color: isSelectionMode ? 'white' : '#ec4899',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              {isSelectionMode ? 'キャンセル' : '選択'}
-            </button>
-            {isSelectionMode && selectedIds.length > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <Trash2 size={16} />
-                削除 ({selectedIds.length})
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -308,8 +305,145 @@ export default function Home() {
   )
 }
 
+function PhotoViewer({ photos, initialIndex, onClose }) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
+
+  const goNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % photos.length)
+  }
+
+  const goPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length)
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        zIndex: 2000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+      onClick={onClose}
+    >
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+        style={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(255,255,255,0.2)',
+          border: 'none',
+          color: 'white',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2001
+        }}
+      >
+        <X size={24} />
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              goPrev()
+            }}
+            style={{
+              position: 'absolute',
+              left: '16px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2001
+            }}
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              goNext()
+            }}
+            style={{
+              position: 'absolute',
+              right: '16px',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2001
+            }}
+          >
+            <ChevronRight size={24} />
+          </button>
+        </>
+      )}
+
+      <img
+        src={photos[currentIndex]}
+        alt=""
+        style={{
+          maxWidth: '90%',
+          maxHeight: '90%',
+          objectFit: 'contain'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      {photos.length > 1 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: 'white',
+            fontSize: '14px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            padding: '4px 12px',
+            borderRadius: '12px'
+          }}
+        >
+          {currentIndex + 1} / {photos.length}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEdit, onDelete }) {
   const { updatePlace } = useStore()
+  const [showPhotoViewer, setShowPhotoViewer] = useState(false)
+  const [photoViewerIndex, setPhotoViewerIndex] = useState(0)
 
   const toggleVisited = async (e) => {
     e.stopPropagation()
@@ -320,126 +454,144 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
   }
 
   const photos = place.photos || []
-  const displayPhotos = photos.slice(0, 2)
+  const displayPhotos = photos.slice(0, 3)
+
+  const openPhotoViewer = (e, index) => {
+    e.stopPropagation()
+    setPhotoViewerIndex(index)
+    setShowPhotoViewer(true)
+  }
 
   return (
-    <div
-      onClick={isSelectionMode ? onToggleSelection : onEdit}
-      style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        padding: '16px',
-        cursor: 'pointer',
-        border: isSelected ? '2px solid #ec4899' : '2px solid transparent',
-        position: 'relative'
-      }}
-    >
-      {isSelectionMode && (
-        <div style={{
-          position: 'absolute',
-          top: '12px',
-          right: '12px',
-          width: '24px',
-          height: '24px',
-          borderRadius: '50%',
-          border: '2px solid #ec4899',
-          backgroundColor: isSelected ? '#ec4899' : 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10
-        }}>
-          {isSelected && <span style={{ color: 'white', fontSize: '16px' }}>✓</span>}
-        </div>
-      )}
+    <>
+      <div
+        onClick={isSelectionMode ? onToggleSelection : onEdit}
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          padding: '16px',
+          cursor: 'pointer',
+          border: isSelected ? '2px solid #ec4899' : '2px solid transparent',
+          position: 'relative'
+        }}
+      >
+        {isSelectionMode && (
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            border: '2px solid #ec4899',
+            backgroundColor: isSelected ? '#ec4899' : 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10
+          }}>
+            {isSelected && <span style={{ color: 'white', fontSize: '16px' }}>✓</span>}
+          </div>
+        )}
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
-            {place.name}
-          </h3>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+              {place.name}
+            </h3>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
-            <span style={{
-              padding: '2px 8px',
-              borderRadius: '12px',
-              backgroundColor: '#fce7f3',
-              color: '#ec4899',
-              fontSize: '12px'
-            }}>
-              {place.category}
-            </span>
-            {place.season && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
               <span style={{
                 padding: '2px 8px',
                 borderRadius: '12px',
-                backgroundColor: '#fef3c7',
-                color: '#f59e0b',
+                backgroundColor: '#fce7f3',
+                color: '#ec4899',
                 fontSize: '12px'
               }}>
-                {place.season}
+                {place.category}
               </span>
-            )}
-          </div>
-
-          {place.station && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>
-              <MapPin size={14} />
-              <span>{place.station}</span>
-            </div>
-          )}
-
-          {place.memo && (
-            <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
-              {place.memo}
-            </p>
-          )}
-
-          {!isSelectionMode && (
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              <button
-                onClick={toggleVisited}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  backgroundColor: place.visited ? '#22c55e' : '#e5e7eb',
-                  color: place.visited ? 'white' : '#6b7280',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
-              >
-                {place.visited ? '✓ 行った' : '行ってない'}
-              </button>
-              {place.visited && place.visited_date && (
-                <span style={{ fontSize: '12px', color: '#9ca3af', alignSelf: 'center' }}>
-                  {new Date(place.visited_date).toLocaleDateString('ja-JP')}
+              {place.season && (
+                <span style={{
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  backgroundColor: '#fef3c7',
+                  color: '#f59e0b',
+                  fontSize: '12px'
+                }}>
+                  {place.season}
                 </span>
               )}
             </div>
+
+            {place.station && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>
+                <MapPin size={14} />
+                <span>{place.station}</span>
+              </div>
+            )}
+
+            {place.memo && (
+              <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+                {place.memo}
+              </p>
+            )}
+
+            {!isSelectionMode && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <button
+                  onClick={toggleVisited}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: place.visited ? '#22c55e' : '#e5e7eb',
+                    color: place.visited ? 'white' : '#6b7280',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {place.visited ? '✓ 行った' : '行ってない'}
+                </button>
+                {place.visited && place.visited_date && (
+                  <span style={{ fontSize: '12px', color: '#9ca3af', alignSelf: 'center' }}>
+                    {new Date(place.visited_date).toLocaleDateString('ja-JP')}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {displayPhotos.length > 0 && (
+            <div style={{ display: 'flex', gap: '4px', flexShrink: 0, flexDirection: 'column' }}>
+              {displayPhotos.map((photoUrl, idx) => (
+                <img
+                  key={idx}
+                  src={photoUrl}
+                  alt=""
+                  onClick={(e) => openPhotoViewer(e, idx)}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                    cursor: 'pointer'
+                  }}
+                />
+              ))}
+            </div>
           )}
         </div>
-
-        {displayPhotos.length > 0 && (
-          <div style={{ display: 'flex', gap: '4px', flexShrink: 0, flexDirection: 'column' }}>
-            {displayPhotos.map((photoUrl, idx) => (
-              <img
-                key={idx}
-                src={photoUrl}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '6px',
-                  objectFit: 'cover'
-                }}
-              />
-            ))}
-          </div>
-        )}
       </div>
-    </div>
+
+      {showPhotoViewer && (
+        <PhotoViewer
+          photos={photos}
+          initialIndex={photoViewerIndex}
+          onClose={() => setShowPhotoViewer(false)}
+        />
+      )}
+    </>
   )
 }
 
@@ -698,7 +850,8 @@ function AddPlaceModal({ onClose }) {
                       src={preview}
                       alt=""
                       style={{
-                        width: '80px',
+                        width:
+ '80px',
                         height: '80px',
                         objectFit: 'cover',
                         borderRadius: '8px'
@@ -829,8 +982,7 @@ function EditPlaceModal({ place, onClose }) {
 
       if (error) {
         alert('エラーが発生しました')
-        console.error(
-error)
+        console.error(error)
       } else {
         onClose()
       }

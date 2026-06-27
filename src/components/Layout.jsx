@@ -1,14 +1,13 @@
 ﻿import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Heart, Map, Calendar, List } from 'lucide-react'
+import { Heart, Sparkles, List } from 'lucide-react'
 
 export default function Layout({ children }) {
   const location = useLocation()
   
   const navItems = [
     { path: '/', icon: Heart, label: 'ホーム' },
-    { path: '/map', icon: Map, label: 'マップ' },
-    { path: '/calendar', icon: Calendar, label: 'カレンダー' },
+    { path: '/ai-suggestions', icon: Sparkles, label: 'AI提案' },
     { path: '/plans', icon: List, label: 'プラン' }
   ]
   

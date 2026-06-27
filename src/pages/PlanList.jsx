@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
-import { List, Plus, Calendar, Trash2, X, MapPin, Clock, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { List, Plus, Calendar, Trash2, Edit, X, MapPin, Clock, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function PlanList() {
   const stores = useStore()
@@ -215,6 +215,7 @@ function PlanCard({ plan, onEdit, onDelete }) {
   const [showPhotoViewer, setShowPhotoViewer] = useState(false)
   const [photoViewerIndex, setPhotoViewerIndex] = useState(0)
   const [allPhotos, setAllPhotos] = useState([])
+  const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
     const photos = []
@@ -234,47 +235,65 @@ function PlanCard({ plan, onEdit, onDelete }) {
     setShowPhotoViewer(true)
   }
 
+  const handleEdit = (e) => {
+    e.stopPropagation()
+    onEdit()
+  }
+
   return (
     <>
-      <div
-        onClick={onEdit}
-        style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', cursor: 'pointer' }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '0.25rem' }}>{plan.title}</h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '0.25rem' }}>
-              {plan.date && (
-                <p style={{ fontSize: '0.875rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <Calendar size={14} />
-                  {new Date(plan.date).toLocaleDateString('ja-JP')}
-                </p>
-              )}
-              {plan.season && (
-                <span style={{
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  backgroundColor: '#fef3c7',
-                  color: '#f59e0b',
-                  fontSize: '12px'
-                }}>
-                  {plan.season}
-                </span>
+      <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)' }}>
+        <div
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{ cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '0.25rem' }}>{plan.title}</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '0.25rem' }}>
+                {plan.date && (
+                  <p style={{ fontSize: '0.875rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <Calendar size={14} />
+                    {new Date(plan.date).toLocaleDateString('ja-JP')}
+                  </p>
+                )}
+                {plan.season && (
+                  <span style={{
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    backgroundColor: '#fef3c7',
+                    color: '#f59e0b',
+                    fontSize: '12px'
+                  }}>
+                    {plan.season}
+                  </span>
+                )}
+              </div>
+              {plan.notes && (
+                <p style={{ fontSize: '0.875rem', color: '#374151', marginTop: '0.5rem' }}>{plan.notes}</p>
               )}
             </div>
-            {plan.notes && (
-              <p style={{ fontSize: '0.875rem', color: '#374151', marginTop: '0.5rem' }}>{plan.notes}</p>
-            )}
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button
+                onClick={handleEdit}
+                style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fef3c7', color: '#f59e0b', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Edit size={18} />
+              </button>
+              <button
+                onClick={onDelete}
+                style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Trash2 size={18} />
+              </button>
+              <span style={{ fontSize: '1.25rem', color: '#6b7280' }}>
+                {isExpanded ? '▲' : '▼'}
+              </span>
+            </div>
           </div>
-          <button
-            onClick={onDelete}
-            style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', cursor: 'pointer', flexShrink: 0 }}
-          >
-            <Trash2 size={18} />
-          </button>
         </div>
 
-        {plan.places && plan.places.length > 0 && (
+        {isExpanded && plan.places && plan.places.length > 0 && (
           <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #f3f4f6' }}>
             <p style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '0.5rem' }}>
               訪問予定の場所 ({plan.places.length}件)
@@ -305,9 +324,6 @@ function PlanCard({ plan, onEdit, onDelete }) {
                         </p>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#fce7f3', color: '#db2777', borderRadius: '9999px' }}>
-                      {place.category}
-                    </span>
                     {displayPhotos.length > 0 && (
                       <div style={{ display: 'flex', gap: '4px', flexDirection: 'column', flexShrink: 0 }}>
                         {displayPhotos.map((photoUrl, photoIdx) => (
@@ -327,6 +343,9 @@ function PlanCard({ plan, onEdit, onDelete }) {
                         ))}
                       </div>
                     )}
+                    <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#fce7f3', color: '#db2777', borderRadius: '9999px', flexShrink: 0 }}>
+                      {place.category}
+                    </span>
                   </div>
                 )
               })}
@@ -334,7 +353,7 @@ function PlanCard({ plan, onEdit, onDelete }) {
           </div>
         )}
 
-        {(!plan.places || plan.places.length === 0) && (
+        {isExpanded && (!plan.places || plan.places.length === 0) && (
           <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginTop: '0.5rem', textAlign: 'center', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem' }}>
             まだ場所が追加されていません
           </p>
@@ -698,7 +717,7 @@ function PlanModal({ plan, onClose }) {
             </div>
 
             {showFilters && (
-              <div style={{ 
+                    <div style={{ 
                 backgroundColor: '#f9fafb', 
                 borderRadius: '8px', 
                 padding: '12px', 
@@ -918,3 +937,5 @@ function PlanModal({ plan, onClose }) {
     </div>
   )
 }
+
+              

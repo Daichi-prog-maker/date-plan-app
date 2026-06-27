@@ -243,4 +243,19 @@ export const useStore = create((set, get) => ({
     }
     return { error }
   }
+    // 既存のコードの後に追加
+
+  updatePlaceTime: async (planId, placeId, time) => {
+    const { error } = await supabase
+      .from('plan_places')
+      .update({ time })
+      .eq('plan_id', planId)
+      .eq('place_id', placeId)
+    
+    if (!error) {
+      await get().fetchPlans()
+    }
+    return { error }
+  }
+
 }))

@@ -199,31 +199,52 @@ export const useStore = create((set, get) => ({
     return { error }
   },
 
-  uploadPhoto: async (file, placeId) => {
+  uploadPhotos: async (files, placeId) => {
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${placeId || Date.now()}-${Date.now()}.${fileExt}`
-      const filePath = `place-photos/${fileName}`
+      const uploadedUrls = []
+      
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${placeId || Date.now()}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+        const filePath = `place-photos/${fileName}`
 
-      console.log('Uploading to Supabase Storage:', filePath)
+        const { error: uploadError } = await supabase.storage
+          .from('photos')
+          .upload(filePath, file, { upsert: true })
 
-      const { error: uploadError } = await supabase.storage
-        .from('photos')
-        .upload(filePath, file, { upsert: true })
+        if (uploadError) {
+          console.error('Upload error:', uploadError)
+          continue
+        }
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError)
-        return { error: uploadError }
+        const { data } = supabase.storage
+          .from('photos')
+          .getPublicUrl(filePath)
+
+        uploadedUrls.push(data.publicUrl)
       }
 
-      const { data } = supabase.storage
-        .from('photos')
-        .getPublicUrl(filePath)
-
-      console.log('Public URL:', data.publicUrl)
-      return { data: data.publicUrl, error: null }
+      return { data: uploadedUrls, error: null }
     } catch (error) {
-      console.error('uploadPhoto exception:', error)
+      console.error('uploadPhotos exception:', error)
+      return { error }
+    }
+  },
+
+  deletePhoto: async (photoUrl) => {
+    try {
+      const urlParts = photoUrl.split('place-photos/')
+      if (urlParts.length < 2) return { error: 'Invalid URL' }
+      
+      const filePath = `place-photos/${urlParts[1]}`
+      
+      const { error } = await supabase.storage
+        .from('photos')
+        .remove([filePath])
+      
+      return { error }
+    } catch (error) {
+      console.error('deletePhoto exception:', error)
       return { error }
     }
   }

@@ -84,40 +84,20 @@ export default function Home() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
+          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}>
             <option value="すべて">すべて</option>
-            {CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
+            {CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}
           </select>
-          <select
-            value={selectedSeason}
-            onChange={(e) => setSelectedSeason(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
+          <select value={selectedSeason} onChange={(e) => setSelectedSeason(e.target.value)} style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}>
             <option value="すべて">すべて</option>
-            {SEASONS.map(season => (
-              <option key={season} value={season}>{season}</option>
-            ))}
+            {SEASONS.map(season => (<option key={season} value={season}>{season}</option>))}
           </select>
-          <select
-            value={visitedFilter}
-            onChange={(e) => setVisitedFilter(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
+          <select value={visitedFilter} onChange={(e) => setVisitedFilter(e.target.value)} style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}>
             <option value="すべて">すべて</option>
             <option value="未訪問">未訪問</option>
             <option value="訪問済み">訪問済み</option>
           </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}
-          >
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fbcfe8', fontSize: '0.875rem', backgroundColor: 'white' }}>
             <option value="created_at">新しい順</option>
             <option value="name">名前順</option>
             <option value="favorite">お気に入り順</option>
@@ -127,103 +107,43 @@ export default function Home() {
 
       <div style={{ maxWidth: '56rem', margin: '0 auto', padding: '1rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{ flex: 1, backgroundColor: '#ec4899', color: 'white', padding: '0.75rem', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-          >
-            <Plus size={20} />
-            新しい場所を追加
+          <button onClick={() => setShowAddModal(true)} style={{ flex: 1, backgroundColor: '#ec4899', color: 'white', padding: '0.75rem', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            <Plus size={20} />新しい場所を追加
           </button>
-          <button
-            onClick={() => {
-              setSelectMode(!selectMode)
-              setSelectedIds([])
-            }}
-            style={{ padding: '0.75rem 1rem', borderRadius: '0.75rem', fontWeight: 'bold', border: selectMode ? 'none' : '1px solid #d1d5db', backgroundColor: selectMode ? '#6b7280' : 'white', color: selectMode ? 'white' : '#374151', cursor: 'pointer' }}
-          >
+          <button onClick={() => { setSelectMode(!selectMode); setSelectedIds([]) }} style={{ padding: '0.75rem 1rem', borderRadius: '0.75rem', fontWeight: 'bold', border: selectMode ? 'none' : '1px solid #d1d5db', backgroundColor: selectMode ? '#6b7280' : 'white', color: selectMode ? 'white' : '#374151', cursor: 'pointer' }}>
             {selectMode ? 'キャンセル' : '選択'}
           </button>
         </div>
 
         {selectMode && selectedIds.length > 0 && (
-          <button
-            onClick={handleBulkDelete}
-            style={{ width: '100%', backgroundColor: '#ef4444', color: 'white', padding: '0.75rem', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}
-          >
-            <Trash2 size={20} />
-            {selectedIds.length}件を削除
+          <button onClick={handleBulkDelete} style={{ width: '100%', backgroundColor: '#ef4444', color: 'white', padding: '0.75rem', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <Trash2 size={20} />{selectedIds.length}件を削除
           </button>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredPlaces.map(place => (
-            <div
-              key={place.id}
-              onClick={() => selectMode && toggleSelect(place.id)}
-              style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', cursor: selectMode ? 'pointer' : 'default', border: selectedIds.includes(place.id) ? '2px solid #ec4899' : 'none' }}
-            >
+            <div key={place.id} onClick={() => selectMode && toggleSelect(place.id)} style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', cursor: selectMode ? 'pointer' : 'default', border: selectedIds.includes(place.id) ? '2px solid #ec4899' : 'none' }}>
               <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
-                {selectMode && (
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(place.id)}
-                    onChange={() => toggleSelect(place.id)}
-                    style={{ marginTop: '0.25rem' }}
-                  />
-                )}
+                {selectMode && (<input type="checkbox" checked={selectedIds.includes(place.id)} onChange={() => toggleSelect(place.id)} style={{ marginTop: '0.25rem' }} />)}
                 <div style={{ flex: 1 }}>
-                  {place.photo_url && (
-                    <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '0.75rem' }} />
-                  )}
+                  {place.photo_url && (<img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '0.75rem' }} />)}
                   <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                     <div style={{ flex: 1 }}>
                       <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>{place.name}</h3>
                       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-                        <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#fce7f3', color: '#db2777', borderRadius: '9999px' }}>
-                          {place.category}
-                        </span>
-                        {place.season && (
-                          <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#dbeafe', color: '#2563eb', borderRadius: '9999px' }}>
-                            {place.season}
-                          </span>
-                        )}
+                        <span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#fce7f3', color: '#db2777', borderRadius: '9999px' }}>{place.category}</span>
+                        {place.season && (<span style={{ fontSize: '0.75rem', padding: '0.125rem 0.5rem', backgroundColor: '#dbeafe', color: '#2563eb', borderRadius: '9999px' }}>{place.season}</span>)}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      {!selectMode && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingPlace(place)
-                          }}
-                          style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fef3c7', color: '#f59e0b', cursor: 'pointer' }}
-                        >
-                          <Edit size={18} />
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleVisited(place)
-                        }}
-                        style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: place.visited ? '#d1fae5' : '#f3f4f6', color: place.visited ? '#059669' : '#9ca3af', cursor: 'pointer' }}
-                      >
-                        <Check size={18} />
-                      </button>
+                      {!selectMode && (<button onClick={(e) => { e.stopPropagation(); setEditingPlace(place) }} style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: '#fef3c7', color: '#f59e0b', cursor: 'pointer' }}><Edit size={18} /></button>)}
+                      <button onClick={(e) => { e.stopPropagation(); toggleVisited(place) }} style={{ padding: '0.5rem', borderRadius: '9999px', border: 'none', backgroundColor: place.visited ? '#d1fae5' : '#f3f4f6', color: place.visited ? '#059669' : '#9ca3af', cursor: 'pointer' }}><Check size={18} /></button>
                     </div>
                   </div>
-                  {place.station && (
-                    <p style={{ fontSize: '0.875rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <MapPin size={14} />
-                      {place.station}
-                    </p>
-                  )}
-                  {place.address && (
-                    <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>{place.address}</p>
-                  )}
-                  {place.memo && (
-                    <p style={{ fontSize: '0.875rem', color: '#374151', marginTop: '0.5rem' }}>{place.memo}</p>
-                  )}
+                  {place.station && (<p style={{ fontSize: '0.875rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><MapPin size={14} />{place.station}</p>)}
+                  {place.address && (<p style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>{place.address}</p>)}
+                  {place.memo && (<p style={{ fontSize: '0.875rem', color: '#374151', marginTop: '0.5rem' }}>{place.memo}</p>)}
                 </div>
               </div>
             </div>
@@ -239,57 +159,28 @@ export default function Home() {
       </div>
 
       {showAddModal && <AddPlaceModal onClose={() => setShowAddModal(false)} />}
-      {editingPlace && (
-        <EditPlaceModal 
-          place={editingPlace} 
-          onClose={() => setEditingPlace(null)} 
-        />
-      )}
+      {editingPlace && (<EditPlaceModal place={editingPlace} onClose={() => setEditingPlace(null)} />)}
     </div>
   )
 }
 
 function AddPlaceModal({ onClose }) {
   const stores = useStore()
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'ご飯',
-    address: '',
-    station: '',
-    memo: '',
-    season: '通年',
-    photoFile: null,
-    photoPreview: null
-  })
+  const [formData, setFormData] = useState({ name: '', category: 'ご飯', address: '', station: '', memo: '', season: '通年', photoFile: null, photoPreview: null })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('=== AddPlace Submit開始 ===')
-    console.log('formData:', formData)
-    
-    if (!formData.name.trim()) {
-      alert('場所の名前を入力してください')
-      return
-    }
-    
+    if (!formData.name.trim()) { alert('場所の名前を入力してください'); return }
     let photo_url = null
     if (formData.photoFile) {
-      console.log('写真をアップロード中...')
       const result = await stores.uploadPhoto(formData.photoFile, 'new')
-      console.log('アップロード結果:', result)
-      if (!result.error) {
-        photo_url = result.data
-      }
+      if (!result.error) photo_url = result.data
     }
-    
     const placeData = { ...formData }
     delete placeData.photoFile
     delete placeData.photoPreview
     if (photo_url) placeData.photo_url = photo_url
-    
-    console.log('保存するデータ:', placeData)
     await stores.addPlace(placeData)
-    console.log('=== 保存完了 ===')
     onClose()
   }
 
@@ -298,127 +189,17 @@ function AddPlaceModal({ onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>新しい場所を追加</h2>
-          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
-            <X size={24} />
-          </button>
+          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X size={24} /></button>
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿カフェ"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label>
-            <input
-              type="text"
-              value={formData.station}
-              onChange={(e) => setFormData({...formData, station: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿駅"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label>
-            <input
-              type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 東京都新宿区..."
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label>
-            <select
-              value={formData.season}
-              onChange={(e) => setFormData({...formData, season: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            >
-              {SEASONS.map(season => (
-                <option key={season} value={season}>{season}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label>
-            <textarea
-              value={formData.memo}
-              onChange={(e) => setFormData({...formData, memo: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              rows="3"
-              placeholder="例: インスタで見つけた！パンケーキが美味しそう"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onloadend = () => {
-                    setFormData({...formData, photoFile: file, photoPreview: reader.result})
-                  }
-                  reader.readAsDataURL(file)
-                }
-              }}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            />
-            {formData.photoPreview && (
-              <div style={{ position: 'relative', marginTop: '0.5rem' }}>
-                <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} />
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})}
-                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  削除
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{ flex: 1, padding: '0.75rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.75rem', fontWeight: 'bold', backgroundColor: 'white', cursor: 'pointer' }}
-            >
-              キャンセル
-            </button>
-            <button
-              type="submit"
-              style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
-            >
-              追加
-            </button>
-          </div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} placeholder="例: 新宿カフェ" /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label><select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}>{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}</select></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label><input type="text" value={formData.station} onChange={(e) => setFormData({...formData, station: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} placeholder="例: 新宿駅" /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label><input type="text" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} placeholder="例: 東京都新宿区..." /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label><select value={formData.season} onChange={(e) => setFormData({...formData, season: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}>{SEASONS.map(season => (<option key={season} value={season}>{season}</option>))}</select></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label><textarea value={formData.memo} onChange={(e) => setFormData({...formData, memo: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} rows="3" placeholder="例: インスタで見つけた！パンケーキが美味しそう" /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label><input type="file" accept="image/*" onChange={(e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => { setFormData({...formData, photoFile: file, photoPreview: reader.result}) }; reader.readAsDataURL(file) }}} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} />{formData.photoPreview && (<div style={{ position: 'relative', marginTop: '0.5rem' }}><img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} /><button type="button" onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>削除</button></div>)}</div>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}><button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.75rem', fontWeight: 'bold', backgroundColor: 'white', cursor: 'pointer' }}>キャンセル</button><button type="submit" style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>追加</button></div>
         </form>
       </div>
     </div>
@@ -427,42 +208,20 @@ function AddPlaceModal({ onClose }) {
 
 function EditPlaceModal({ place, onClose }) {
   const stores = useStore()
-  const [formData, setFormData] = useState({
-    name: place.name || '',
-    category: place.category || 'ご飯',
-    address: place.address || '',
-    station: place.station || '',
-    memo: place.memo || '',
-    season: place.season || '通年',
-    photoFile: null,
-    photoPreview: place.photo_url || null
-  })
+  const [formData, setFormData] = useState({ name: place.name || '', category: place.category || 'ご飯', address: place.address || '', station: place.station || '', memo: place.memo || '', season: place.season || '通年', photoFile: null, photoPreview: place.photo_url || null })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('=== EditPlace Submit開始 ===')
-    console.log('formData:', formData)
-    console.log('place.id:', place.id)
-    
-    if (!formData.name.trim()) {
-      alert('場所の名前を入力してください')
-      return
-    }
-    
+    if (!formData.name.trim()) { alert('場所の名前を入力してください'); return }
     let photo_url = formData.photoPreview
     if (formData.photoFile) {
-      console.log('写真をアップロード中...')
       const result = await stores.uploadPhoto(formData.photoFile, place.id)
-      if (!result.error) {
-        photo_url = result.data
-      }
+      if (!result.error) photo_url = result.data
     }
-    
     const placeData = { ...formData }
     delete placeData.photoFile
     delete placeData.photoPreview
     placeData.photo_url = photo_url
-    
     await stores.updatePlace(place.id, placeData)
     onClose()
   }
@@ -472,102 +231,19 @@ function EditPlaceModal({ place, onClose }) {
       <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '28rem', width: '100%', maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>場所を編集</h2>
-          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
-            <X size={24} />
-          </button>
+          <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}><X size={24} /></button>
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿カフェ"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label>
-            <input
-              type="text"
-              value={formData.station}
-              onChange={(e) => setFormData({...formData, station: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 新宿駅"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label>
-            <input
-              type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              placeholder="例: 東京都新宿区..."
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label>
-            <select
-              value={formData.season}
-              onChange={(e) => setFormData({...formData, season: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            >
-              {SEASONS.map(season => (
-                <option key={season} value={season}>{season}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label>
-            <textarea
-              value={formData.memo}
-              onChange={(e) => setFormData({...formData, memo: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-              rows="3"
-              placeholder="例: インスタで見つけた！パンケーキが美味しそう"
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onloadend = () => {
-                    setFormData({...formData, photoFile: file, photoPreview: reader.result})
-                  }
-                  reader.readAsDataURL(file)
-                }
-              }}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
-            />
-            {formData.photoPreview && (
-              <div style={{ position: 'relative', marginTop: '0.5rem' }}>
-                <img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} />
-                <button
-                  type="button"
-                  onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})}
-                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>場所の名前 *</label><input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} placeholder="例: 新宿カフェ" /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>カテゴリ *</label><select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}>{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}</select></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>最寄り駅</label><input type="text" value={formData.station} onChange={(e) => setFormData({...formData, station: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} placeholder="例: 新宿駅" /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>住所</label><input type="text" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} placeholder="例: 東京都新宿区..." /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>季節</label><select value={formData.season} onChange={(e) => setFormData({...formData, season: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}>{SEASONS.map(season => (<option key={season} value={season}>{season}</option>))}</select></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>メモ</label><textarea value={formData.memo} onChange={(e) => setFormData({...formData, memo: e.target.value})} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} rows="3" placeholder="例: インスタで見つけた！パンケーキが美味しそう" /></div>
+          <div><label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>写真</label><input type="file" accept="image/*" onChange={(e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => { setFormData({...formData, photoFile: file, photoPreview: reader.result}) }; reader.readAsDataURL(file) }}} style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }} />{formData.photoPreview && (<div style={{ position: 'relative', marginTop: '0.5rem' }}><img src={formData.photoPreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '0.5rem' }} /><button type="button" onClick={() => setFormData({...formData, photoFile: null, photoPreview: null})} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>削除</button></div>)}</div>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}><button type="button" onClick={onClose} style={{ flex: 1, padding: '0.75rem 1rem', border: '1px solid #d1d5db', borderRadius: '0.75rem', fontWeight: 'bold', backgroundColor: 'white', cursor: 'pointer' }}>キャンセル</button><button type="submit" style={{ flex: 1, padding: '0.75rem 1rem', backgroundColor: '#ec4899', color: 'white', borderRadius: '0.75rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>更新</button></div>
+        </form>
+      </div>
+    </div>
+  )
+}

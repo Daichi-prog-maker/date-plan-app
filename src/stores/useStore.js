@@ -123,6 +123,7 @@ export const useStore = create((set, get) => ({
           id,
           order_index,
           time,
+          custom_name,
           place:places (*)
         )
       `)
@@ -132,10 +133,20 @@ export const useStore = create((set, get) => ({
       const plansWithPlaces = data.map(plan => ({
         ...plan,
         places: plan.plan_places
-          .sort((a, b) => a.order_index - b.order_index)
+          .sort((a, b) => {
+            const timeA = a.time || '23:59:59'
+            const timeB = b.time || '23:59:59'
+            return timeA.localeCompare(timeB)
+          })
           .map(pp => ({
-            ...pp.place,
-            time: pp.time
+            id: pp.id,
+            place_id: pp.place?.id || null,
+            name: pp.custom_name || pp.place?.name || '',
+            category: pp.place?.category || 'カスタム',
+            station: pp.place?.station || '',
+            photos: pp.place?.photos || [],
+            time: pp.time,
+            isCustom: !pp.place
           }))
       }))
       set({ plans: plansWithPlaces })
@@ -143,7 +154,7 @@ export const useStore = create((set, get) => ({
     set({ loading: false })
   },
 
-  addPlan: async (plan, placeIds) => {
+  addPlan: async (plan, planPlaces) => {
     const { data: planData, error: planError } = await supabase
       .from('plans')
       .insert([plan])
@@ -153,16 +164,10 @@ export const useStore = create((set, get) => ({
 
     const planId = planData[0].id
     
-    if (placeIds && placeIds.length > 0) {
-      const planPlaces = placeIds.map((placeId, index) => ({
-        plan_id: planId,
-        place_id: placeId,
-        order_index: index
-      }))
-
+    if (planPlaces && planPlaces.length > 0) {
       const { error: planPlacesError } = await supabase
         .from('plan_places')
-        .insert(planPlaces)
+        .insert(planPlaces.map(pp => ({ ...pp, plan_id: planId })))
       
       if (planPlacesError) return { error: planPlacesError }
     }
@@ -171,7 +176,7 @@ export const useStore = create((set, get) => ({
     return { data: planData[0], error: null }
   },
 
-  updatePlan: async (id, updates, placeIds) => {
+  updatePlan: async (id, updates, planPlaces) => {
     const { data, error } = await supabase
       .from('plans')
       .update(updates)
@@ -180,22 +185,16 @@ export const useStore = create((set, get) => ({
     
     if (error) return { error }
 
-    if (placeIds !== undefined) {
+    if (planPlaces !== undefined) {
       await supabase
         .from('plan_places')
         .delete()
         .eq('plan_id', id)
 
-      if (placeIds.length > 0) {
-        const planPlaces = placeIds.map((placeId, index) => ({
-          plan_id: id,
-          place_id: placeId,
-          order_index: index
-        }))
-
+      if (planPlaces.length > 0) {
         await supabase
           .from('plan_places')
-          .insert(planPlaces)
+          .insert(planPlaces.map(pp => ({ ...pp, plan_id: id })))
       }
     }
 
@@ -211,52 +210,6 @@ export const useStore = create((set, get) => ({
     
     if (!error) {
       set({ plans: get().plans.filter(p => p.id !== id) })
-    }
-    return { error }
-  },
-
-  addPlaceToPlan: async (planId, placeId) => {
-    const plan = get().plans.find(p => p.id === planId)
-    if (!plan) return { error: 'Plan not found' }
-
-    const orderIndex = plan.places?.length || 0
-
-    const { error } = await supabase
-      .from('plan_places')
-      .insert([{
-        plan_id: planId,
-        place_id: placeId,
-        order_index: orderIndex
-      }])
-
-    if (!error) {
-      await get().fetchPlans()
-    }
-    return { error }
-  },
-
-  removePlaceFromPlan: async (planId, placeId) => {
-    const { error } = await supabase
-      .from('plan_places')
-      .delete()
-      .eq('plan_id', planId)
-      .eq('place_id', placeId)
-
-    if (!error) {
-      await get().fetchPlans()
-    }
-    return { error }
-  },
-
-  updatePlaceTime: async (planId, placeId, time) => {
-    const { error } = await supabase
-      .from('plan_places')
-      .update({ time })
-      .eq('plan_id', planId)
-      .eq('place_id', placeId)
-    
-    if (!error) {
-      await get().fetchPlans()
     }
     return { error }
   }

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
 import { List, Plus, Calendar, Trash2, Edit, X, MapPin, GripVertical } from 'lucide-react'
 
@@ -20,7 +20,7 @@ export default function PlanList() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fce7f3', paddingBottom: '5rem' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fce7f3', paddingBottom: '100px' }}>
       <div style={{ backgroundColor: 'white', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 10 }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ec4899', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
           <List size={28} />
@@ -171,7 +171,7 @@ function AddPlanModal({ onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '40rem', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '40rem', width: '100%', maxHeight: '90vh', overflowY: 'auto', paddingBottom: '100px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>新しいプランを作成</h2>
           <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
@@ -185,7 +185,7 @@ function AddPlanModal({ onClose }) {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', boxSizing: 'border-box' }}
               placeholder="例: 新宿デート"
             />
           </div>
@@ -196,7 +196,7 @@ function AddPlanModal({ onClose }) {
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({...formData, date: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -205,7 +205,7 @@ function AddPlanModal({ onClose }) {
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', boxSizing: 'border-box' }}
               rows="2"
               placeholder="例: 天気が良かったら公園も"
             />
@@ -284,7 +284,7 @@ function AddPlanModal({ onClose }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', paddingBottom: '20px' }}>
             <button
               type="button"
               onClick={onClose}
@@ -345,7 +345,7 @@ function EditPlanModal({ plan, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 50 }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '40rem', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '1.5rem', maxWidth: '40rem', width: '100%', maxHeight: '90vh', overflowY: 'auto', paddingBottom: '100px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>プランを編集</h2>
           <button onClick={onClose} style={{ padding: '0.25rem', border: 'none', backgroundColor: 'transparent', cursor: 'pointer' }}>
@@ -359,7 +359,7 @@ function EditPlanModal({ plan, onClose }) {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', boxSizing: 'border-box' }}
               placeholder="例: 新宿デート"
             />
           </div>
@@ -370,7 +370,7 @@ function EditPlanModal({ plan, onClose }) {
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({...formData, date: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -379,7 +379,7 @@ function EditPlanModal({ plan, onClose }) {
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.5rem', boxSizing: 'border-box' }}
               rows="2"
               placeholder="例: 天気が良かったら公園も"
             />
@@ -458,7 +458,7 @@ function EditPlanModal({ plan, onClose }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', paddingBottom: '20px' }}>
             <button
               type="button"
               onClick={onClose}

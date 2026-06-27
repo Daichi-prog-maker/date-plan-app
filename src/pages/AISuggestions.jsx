@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useStore } from '../stores/useStore'
 import { Sparkles, MapPin, Search, X, Plus, MessageSquare } from 'lucide-react'
 import { ghibliStyles, commonStyles, mergeGhibliStyles } from '../stores/ghibliStyles'

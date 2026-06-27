@@ -526,6 +526,105 @@ function PlanModal({ plan, onClose }) {
   const [showFilters, setShowFilters] = useState(false)
   const [showCustomPlaceInput, setShowCustomPlaceInput] = useState(false)
   const [customPlaceName, setCustomPlaceName] = useState('')
+  
+  // Google検索用の状態
+  const [searchQuery, setSearchQuery] = useState('')
+  const [predictions, setPredictions] = useState([])
+  const [showPredictions, setShowPredictions] = useState(false)
+  const [loadingPredictions, setLoadingPredictions] = useState(false)
+
+  // Google Maps APIをロード
+  const loadGoogleMapsAPI = () => {
+    return new Promise((resolve, reject) => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        resolve()
+        return
+      }
+      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        reject(new Error('Google Places API key not found'))
+        return
+      }
+      const script = document.createElement('script')
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=ja&region=JP`
+      script.async = true
+      script.defer = true
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load Google Maps API'))
+      document.head.appendChild(script)
+    })
+  }
+
+  // 検索クエリが変更されたら予測候補を取得
+  useEffect(() => {
+    const fetchPredictions = async () => {
+      if (searchQuery.length < 3) {
+        setPredictions([])
+        setShowPredictions(false)
+        return
+      }
+      setLoadingPredictions(true)
+      try {
+        if (!window.google || !window.google.maps || !window.google.maps.places) {
+          await loadGoogleMapsAPI()
+        }
+        const service = new window.google.maps.places.AutocompleteService()
+        service.getPlacePredictions(
+          { input: searchQuery, componentRestrictions: { country: 'jp' }, language: 'ja' },
+          (results, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+              setPredictions(results)
+              setShowPredictions(true)
+            } else {
+              setPredictions([])
+              setShowPredictions(false)
+            }
+            setLoadingPredictions(false)
+          }
+        )
+      } catch (error) {
+        console.error('Error fetching predictions:', error)
+        setLoadingPredictions(false)
+      }
+    }
+    const timeoutId = setTimeout(fetchPredictions, 300)
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
+
+  // 予測候補を選択してカスタム場所として追加
+  const handleSelectPrediction = async (prediction) => {
+    setShowPredictions(false)
+    setSearchQuery('')
+    setLoadingPredictions(true)
+    try {
+      const detailsService = new window.google.maps.places.PlacesService(document.createElement('div'))
+      detailsService.getDetails(
+        { placeId: prediction.place_id, fields: ['name', 'formatted_address', 'geometry'], language: 'ja' },
+        async (place, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+            setSelectedPlaces(prev => [...prev, {
+              id: `custom-${Date.now()}`,
+              place_id: null,
+              name: place.name,
+              category: 'カスタム',
+              station: '',
+              photos: [],
+              time: '',
+              isCustom: true
+            }])
+            setShowCustomPlaceInput(false)
+          } else {
+            alert('場所の詳細情報を取得できませんでした')
+          }
+          setLoadingPredictions(false)
+        }
+      )
+    } catch (error) {
+      console.error('Error getting place details:', error)
+      alert('エラーが発生しました')
+      setLoadingPredictions(false)
+    }
+  }
 
   const filteredPlaces = stores.places.filter(place => {
     const matchesSearch = 
@@ -774,28 +873,101 @@ function PlanModal({ plan, onClose }) {
             </button>
 
             {showCustomPlaceInput && (
-              <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: '#fef3f9', borderRadius: '8px' }}>
+              <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: '#fef3f9', borderRadius: '8px', position: 'relative' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '500', color: '#ec4899' }}>
+                  🔍 場所を検索（3文字以上で候補表示）
+                </label>
                 <input
                   type="text"
-                  placeholder="場所名を入力（例: 休憩、移動）"
-                  value={customPlaceName}
-                  onChange={(e) => setCustomPlaceName(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery.length >= 3 && predictions.length > 0 && setShowPredictions(true)}
+                  placeholder="例: 新宿 スターバックス、または手動入力（休憩など）"
                   style={{
                     width: '100%',
                     padding: '8px',
-                    border: '1px solid #e5e7eb',
+                    border: '1px solid #fce7f3',
                     borderRadius: '8px',
                     fontSize: '13px',
                     marginBottom: '8px',
                     boxSizing: 'border-box'
                   }}
                 />
+
+                {/* 予測候補ドロップダウン */}
+                {showPredictions && predictions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% - 50px)',
+                    left: '12px',
+                    right: '12px',
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    zIndex: 1001
+                  }}>
+                    {predictions.map((prediction, index) => (
+                      <div
+                        key={prediction.place_id}
+                        onClick={() => handleSelectPrediction(prediction)}
+                        style={{
+                          padding: '10px',
+                          cursor: 'pointer',
+                          borderBottom: index < predictions.length - 1 ? '1px solid #f3f4f6' : 'none',
+                          fontSize: '13px'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef3f9'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                      >
+                        <div style={{ fontWeight: '500', color: '#111827', marginBottom: '2px' }}>
+                          {prediction.structured_formatting.main_text}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+                          {prediction.structured_formatting.secondary_text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {loadingPredictions && (
+                  <p style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '8px' }}>
+                    読み込み中...
+                  </p>
+                )}
+
+                <div style={{ marginBottom: '8px' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#6b7280' }}>
+                    または手動入力
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="場所名を入力（例: 休憩、移動）"
+                    value={customPlaceName}
+                    onChange={(e) => setCustomPlaceName(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     type="button"
                     onClick={() => {
                       setShowCustomPlaceInput(false)
                       setCustomPlaceName('')
+                      setSearchQuery('')
+                      setPredictions([])
+                      setShowPredictions(false)
                     }}
                     style={{
                       flex: 1,
@@ -823,10 +995,25 @@ function PlanModal({ plan, onClose }) {
                       fontSize: '13px'
                     }}
                   >
-                    追加
+                    手動で追加
                   </button>
                 </div>
               </div>
+            )}
+
+            {/* 予測候補が表示されている場合、背景クリックで閉じる */}
+            {showPredictions && (
+              <div 
+                onClick={() => setShowPredictions(false)}
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 1000
+                }}
+              />
             )}
 
             <div style={{ maxHeight: '15rem', overflowY: 'auto', border: '1px solid #d1d5db', borderRadius: '0.5rem', padding: '0.5rem' }}>

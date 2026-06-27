@@ -122,6 +122,7 @@ export const useStore = create((set, get) => ({
         plan_places (
           id,
           order_index,
+          time,
           place:places (*)
         )
       `)
@@ -132,7 +133,10 @@ export const useStore = create((set, get) => ({
         ...plan,
         places: plan.plan_places
           .sort((a, b) => a.order_index - b.order_index)
-          .map(pp => pp.place)
+          .map(pp => ({
+            ...pp.place,
+            time: pp.time
+          }))
       }))
       set({ plans: plansWithPlaces })
     }
@@ -242,8 +246,7 @@ export const useStore = create((set, get) => ({
       await get().fetchPlans()
     }
     return { error }
-  }
-    // 既存のコードの後に追加
+  },
 
   updatePlaceTime: async (planId, placeId, time) => {
     const { error } = await supabase
@@ -257,5 +260,4 @@ export const useStore = create((set, get) => ({
     }
     return { error }
   }
-
 }))

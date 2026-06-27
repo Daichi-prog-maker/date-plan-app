@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
 import { Plus, MapPin, Check, Trash2, Search, X, Edit } from 'lucide-react'
 

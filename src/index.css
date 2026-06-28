@@ -16,10 +16,26 @@ body {
   font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(to bottom, #E8F4F8 0%, #F5F1E8 50%, #E8DCC8 100%);
-  min-height: 100vh;
+  background-image: url('/ghibli-bg.jpg');
+  background-size: cover;
+  background-position: center;
   background-attachment: fixed;
+  background-repeat: no-repeat;
+  min-height: 100vh;
 }
+
+/* 背景画像の上に薄い緑のオーバーレイを追加 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(232, 245, 232, 0.3) 0%, rgba(213, 237, 213, 0.5) 100%);
+  z-index: -1;
+}
+
 
 .ghibli-card {
   background: linear-gradient(to bottom, #FAF8F3 0%, #F5F1E8 100%);

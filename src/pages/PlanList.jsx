@@ -233,12 +233,15 @@ function PlanCard({ plan, onEdit, onDelete }) {
                 {plan.title}
               </h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '4px' }}>
-                {plan.date && (
+                {(plan.start_date || plan.end_date) && (
                   <p style={{ fontSize: '14px', color: '#8B7355', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Calendar size={14} />
-                    {new Date(plan.date).toLocaleDateString('ja-JP')}
+                    {plan.start_date && new Date(plan.start_date).toLocaleDateString('ja-JP')}
+                    {plan.start_date && plan.end_date && ' 〜 '}
+                    {plan.end_date && new Date(plan.end_date).toLocaleDateString('ja-JP')}
                   </p>
                 )}
+
                 {plan.season && (
                   <span style={mergeGhibliStyles(ghibliStyles.tag, {
                     background: 'linear-gradient(to bottom, #F5E6B8 0%, #E8D89A 100%)',
@@ -822,21 +825,6 @@ function PlanModal({ plan, onClose }) {
             />
           </div>
 
-          <div>
-            <label style={commonStyles.label}>
-              日付
-            </label>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({...formData, date: e.target.value})}
-              style={mergeGhibliStyles(ghibliStyles.input, {
-                width: '100%',
-                boxSizing: 'border-box',
-                cursor: 'pointer'
-              })}
-            />
-          </div>
           <div>
 
             <label style={commonStyles.label}>

@@ -499,7 +499,7 @@ function PlaceCard({ place, isSelectionMode, isSelected, onToggleSelection, onEd
           </div>
 
           {displayPhotos.length > 0 && (
-            <div style={{ display: 'flex', gap: '4px', flexShrink: 0, flexDirection: 'column' }}>
+            <div style={{ display: 'flex', gap: '4px', flexShrink: 0, flexDirection: 'row', flexWrap: 'wrap', maxWidth: '200px' }}>
               {displayPhotos.map((photoUrl, idx) => (
                 <img
                   key={idx}

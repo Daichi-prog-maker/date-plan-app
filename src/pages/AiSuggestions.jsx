@@ -64,10 +64,13 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey,
         },
-       body: JSON.stringify({
-  model: 'gemini-2.0-flash-exp',
+     body: JSON.stringify({
+  model: 'gemini-1.5-flash',
   input: prompt
 })
+
+
+
       }
     )
 

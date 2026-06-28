@@ -65,9 +65,10 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
           'x-goog-api-key': apiKey,
         },
      body: JSON.stringify({
-  model: 'gemini-1.5-flash',
+  model: 'gemini-flash-latest',
   input: prompt
 })
+
 
 
 

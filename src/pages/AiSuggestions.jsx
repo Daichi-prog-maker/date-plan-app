@@ -77,22 +77,29 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
       throw new Error(`AI API request failed: ${response.status} - ${errorText}`)
     }
 
-  const data = await response.json()
+const data = await response.json()
 
 console.log('API Response:', data)
+console.log('Steps:', data.steps)
 
 // Interactions APIの新しいレスポンス形式
 if (!data.steps || !Array.isArray(data.steps)) {
   throw new Error('Unexpected API response format: no steps array')
 }
 
+// すべてのstepをログ出力
+data.steps.forEach((step, index) => {
+  console.log(`Step ${index}:`, step)
+})
+
 // 最後のstepからoutputを取得
 const lastStep = data.steps[data.steps.length - 1]
-const text = lastStep.output || lastStep.text || ''
+console.log('Last Step:', lastStep)
 
-if (!text) {
-  throw new Error('No output text in API response')
-}
+// いろんなフィールドを試す
+const text = lastStep.output || lastStep.text || lastStep.content || lastStep.message || JSON.stringify(lastStep)
+
+console.log('Extracted text:', text)
 
 let jsonText = text
 const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/)
@@ -102,7 +109,6 @@ if (jsonMatch) {
 
 const result = JSON.parse(jsonText.trim())
 return result
-
   }
 
 

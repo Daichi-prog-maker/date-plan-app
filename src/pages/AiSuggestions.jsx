@@ -69,10 +69,6 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
   input: prompt
 })
 
-
-
-
-
       }
     )
 
@@ -81,19 +77,32 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
       throw new Error(`AI API request failed: ${response.status} - ${errorText}`)
     }
 
-    const data = await response.json()
-    
-    // 新しいAPIのレスポンス形式
-    const text = data.output_text || data.output || ''
+   const data = await response.json()
 
-    let jsonText = text
-    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      jsonText = jsonMatch[1]
-    }
+// 新しいAPIのレスポンス形式を確認
+console.log('API Response:', data)
 
-    const result = JSON.parse(jsonText)
-    return result
+// レスポンス形式に応じて処理
+let text = ''
+if (data.output_text) {
+  text = data.output_text
+} else if (data.output) {
+  text = data.output
+} else if (data.candidates && data.candidates[0]) {
+  text = data.candidates[0].content?.parts?.[0]?.text || ''
+} else {
+  throw new Error('Unexpected API response format')
+}
+
+let jsonText = text
+const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/)
+if (jsonMatch) {
+  jsonText = jsonMatch[1]
+}
+
+const result = JSON.parse(jsonText.trim())
+return result
+
   }
 
 

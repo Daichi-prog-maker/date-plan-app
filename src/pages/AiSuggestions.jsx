@@ -56,7 +56,7 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
 重要: 必ず有効なJSON形式で出力してください。余計な説明は不要です。`
 
 const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent`,
+  `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent`,
   {
     method: 'POST',
     headers: {

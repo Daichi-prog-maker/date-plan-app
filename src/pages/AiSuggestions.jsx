@@ -55,38 +55,31 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
 
 重要: 必ず有効なJSON形式で出力してください。余計な説明は不要です。`
 
-const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent`,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
-    },
-
+    // 新しいGemini API (2026年版)
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/interactions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.9,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2048,
-          }
+          model: 'gemini-3.5-flash',
+          input: prompt
         })
       }
     )
 
     if (!response.ok) {
-  const errorText = await response.text()
-  throw new Error(`AI API request failed: ${response.status} - ${errorText}`)
-}
+      const errorText = await response.text()
+      throw new Error(`AI API request failed: ${response.status} - ${errorText}`)
+    }
 
     const data = await response.json()
-    const text = data.candidates[0].content.parts[0].text
+    
+    // 新しいAPIのレスポンス形式
+    const text = data.output_text || data.output || ''
 
     let jsonText = text
     const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/)
@@ -97,6 +90,7 @@ const response = await fetch(
     const result = JSON.parse(jsonText)
     return result
   }
+
 
   const handleSearch = async () => {
     if (!searchLocation.trim()) {

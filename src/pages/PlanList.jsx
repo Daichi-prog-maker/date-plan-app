@@ -852,9 +852,9 @@ const planData = {
         />
       </div>
 
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={commonStyles.label}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <div>
+          <label style={{ ...commonStyles.label, fontSize: '12px' }}>
             開始日
           </label>
           <input
@@ -871,8 +871,8 @@ const planData = {
           />
         </div>
 
-        <div style={{ flex: 1 }}>
-          <label style={commonStyles.label}>
+        <div>
+          <label style={{ ...commonStyles.label, fontSize: '12px' }}>
             終了日
           </label>
           <input
@@ -889,8 +889,6 @@ const planData = {
           />
         </div>
       </div>
-
-
 
           <div>
             <label style={commonStyles.label}>

@@ -666,26 +666,33 @@ function PlanModal({ plan, onClose }) {
   })
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!formData.title.trim()) {
-      alert('プラン名を入力してください')
-      return
-    }
-    
-    const planPlaces = selectedPlaces.map((place, index) => ({
-      place_id: place.place_id || null,
-      custom_name: place.isCustom ? place.name : null,
-      time: place.time || null,
-      order_index: index
-    }))
-
-    if (isEdit) {
-      await stores.updatePlan(plan.id, formData, planPlaces)
-    } else {
-      await stores.addPlan(formData, planPlaces)
-    }
-    onClose()
+  e.preventDefault()
+  if (!formData.title.trim()) {
+    alert('プラン名を入力してください')
+    return
   }
+  
+  console.log('Saving formData:', formData) // デバッグ用
+  
+  const planPlaces = selectedPlaces.map((place, index) => ({
+    place_id: place.place_id || null,
+    custom_name: place.isCustom ? place.name : null,
+    time: place.time || null,
+    start_datetime: place.start_datetime || null,
+    end_datetime: place.end_datetime || null,
+    order_index: index
+  }))
+
+  console.log('Saving planPlaces:', planPlaces) // デバッグ用
+
+  if (isEdit) {
+    await stores.updatePlan(plan.id, formData, planPlaces)
+  } else {
+    await stores.addPlan(formData, planPlaces)
+  }
+  onClose()
+}
+
 
   const togglePlace = (place) => {
     setSelectedPlaces(prev => {

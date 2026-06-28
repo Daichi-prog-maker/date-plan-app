@@ -325,7 +325,7 @@ function PlanCard({ plan, onEdit, onDelete }) {
                       border: '2px solid #E8DCC8'
                     })}
                   >
-                    {(place.start_datetime || place.end_datetime) && (
+                    {(place.start_datetime || place.end_datetime || place.time) && (
                       <div style={{ 
                         fontSize: '11px', 
                         fontWeight: 'bold', 
@@ -333,8 +333,10 @@ function PlanCard({ plan, onEdit, onDelete }) {
                         display: 'flex', 
                         flexDirection: 'column',
                         gap: '2px', 
-                        minWidth: '120px' 
+                        minWidth: '150px',  // ← ここを120pxから150pxに変更
+                        flexShrink: 0       // ← これを追加（縮小しないように）
                       }}>
+
                         {place.start_datetime && (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <Clock size={10} />
@@ -865,23 +867,6 @@ const planData = {
                 })}
               />
             </div>
-          </div>
-
-
-          <div>
-            <label style={commonStyles.label}>
-              終了日
-            </label>
-            <input
-              type="date"
-              value={formData.end_date}
-              onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-              style={mergeGhibliStyles(ghibliStyles.input, {
-                width: '100%',
-                boxSizing: 'border-box',
-                cursor: 'pointer'
-              })}
-            />
           </div>
 
           <div>

@@ -77,21 +77,21 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
       throw new Error(`AI API request failed: ${response.status} - ${errorText}`)
     }
 
-   const data = await response.json()
+  const data = await response.json()
 
-// 新しいAPIのレスポンス形式を確認
 console.log('API Response:', data)
 
-// レスポンス形式に応じて処理
-let text = ''
-if (data.output_text) {
-  text = data.output_text
-} else if (data.output) {
-  text = data.output
-} else if (data.candidates && data.candidates[0]) {
-  text = data.candidates[0].content?.parts?.[0]?.text || ''
-} else {
-  throw new Error('Unexpected API response format')
+// Interactions APIの新しいレスポンス形式
+if (!data.steps || !Array.isArray(data.steps)) {
+  throw new Error('Unexpected API response format: no steps array')
+}
+
+// 最後のstepからoutputを取得
+const lastStep = data.steps[data.steps.length - 1]
+const text = lastStep.output || lastStep.text || ''
+
+if (!text) {
+  throw new Error('No output text in API response')
 }
 
 let jsonText = text

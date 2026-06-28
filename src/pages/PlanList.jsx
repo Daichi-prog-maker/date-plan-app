@@ -672,27 +672,32 @@ function PlanModal({ plan, onClose }) {
     return
   }
   
-  console.log('Saving formData:', formData) // デバッグ用
+  // 既存のフィールドのみ送信
+  const planData = {
+    title: formData.title,
+    date: formData.date || null,
+    season: formData.season || null,
+    notes: formData.notes || null
+  }
+  
+  console.log('Saving planData:', planData) // デバッグ用
   
   const planPlaces = selectedPlaces.map((place, index) => ({
     place_id: place.place_id || null,
     custom_name: place.isCustom ? place.name : null,
     time: place.time || null,
-    start_datetime: place.start_datetime || null,
-    end_datetime: place.end_datetime || null,
     order_index: index
   }))
 
   console.log('Saving planPlaces:', planPlaces) // デバッグ用
 
   if (isEdit) {
-    await stores.updatePlan(plan.id, formData, planPlaces)
+    await stores.updatePlan(plan.id, planData, planPlaces)
   } else {
-    await stores.addPlan(formData, planPlaces)
+    await stores.addPlan(planData, planPlaces)
   }
   onClose()
 }
-
 
   const togglePlace = (place) => {
     setSelectedPlaces(prev => {

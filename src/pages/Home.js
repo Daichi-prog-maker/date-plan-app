@@ -549,7 +549,8 @@ function AddPlaceModal({ onClose }) {
   // Google Places Autocomplete state
   const [searchQuery, setSearchQuery] = useState('')
   const [predictions, setPredictions] = useState([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [showPredictions, setShowPredictions] = useState(false)
+  const [loadingPredictions, setLoadingPredictions] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -583,30 +584,64 @@ function AddPlaceModal({ onClose }) {
     setPhotos(prev => prev.filter((_, i) => i !== index))
   }
 
-  // Google Places Autocomplete
-  const searchPlaces = async (query) => {
-    if (query.length < 3) {
-      setPredictions([])
+// Google Maps APIをロード
+const loadGoogleMapsAPI = () => {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.maps && window.google.maps.places) {
+      resolve()
       return
     }
+    const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+    if (!apiKey) {
+      reject(new Error('Google Places API key not found'))
+      return
+    }
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=ja&region=JP`
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Failed to load Google Maps API'))
+    document.head.appendChild(script)
+  })
+}
 
-    setIsSearching(true)
+// 検索クエリが変更されたら予測候補を取得
+useEffect(() => {
+  const fetchPredictions = async () => {
+    if (searchQuery.length < 3) {
+      setPredictions([])
+      setShowPredictions(false)
+      return
+    }
+    setLoadingPredictions(true)
     try {
-      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&language=ja&components=country:jp&key=${apiKey}`
-      )
-      const data = await response.json()
-      
-      if (data.predictions) {
-        setPredictions(data.predictions)
+      if (!window.google || !window.google.maps || !window.google.maps.places) {
+        await loadGoogleMapsAPI()
       }
+      const service = new window.google.maps.places.AutocompleteService()
+      service.getPlacePredictions(
+        { input: searchQuery, componentRestrictions: { country: 'jp' }, language: 'ja' },
+        (results, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+            setPredictions(results)
+            setShowPredictions(true)
+          } else {
+            setPredictions([])
+            setShowPredictions(false)
+          }
+          setLoadingPredictions(false)
+        }
+      )
     } catch (error) {
-      console.error('Place search error:', error)
-    } finally {
-      setIsSearching(false)
+      console.error('Error fetching predictions:', error)
+      setLoadingPredictions(false)
     }
   }
+  const timeoutId = setTimeout(fetchPredictions, 300)
+  return () => clearTimeout(timeoutId)
+}, [searchQuery])
+
 
   const handleSearchChange = (e) => {
     const query = e.target.value
@@ -614,32 +649,35 @@ function AddPlaceModal({ onClose }) {
     searchPlaces(query)
   }
 
-  const selectPlace = async (placeId) => {
-    try {
-      const apiKey = process.env.REACT_APP_GOOGLE_PLACES_API_KEY
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&language=ja&fields=name,formatted_address,geometry&key=${apiKey}`
-      )
-      const data = await response.json()
-      
-      if (data.result) {
-        const result = data.result
-        const addressParts = result.formatted_address.split(' ')
-        
-        setFormData(prev => ({
-          ...prev,
-          name: result.name,
-          address: result.formatted_address,
-          station: addressParts[0] || ''
-        }))
-        
-        setSearchQuery('')
-        setPredictions([])
+  const handleSelectPrediction = async (prediction) => {
+  setShowPredictions(false)
+  setSearchQuery('')
+  setLoadingPredictions(true)
+  try {
+    const detailsService = new window.google.maps.places.PlacesService(document.createElement('div'))
+    detailsService.getDetails(
+      { placeId: prediction.place_id, fields: ['name', 'formatted_address', 'geometry'], language: 'ja' },
+      async (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          const addressParts = place.formatted_address?.split(' ') || []
+          setFormData(prev => ({
+            ...prev,
+            name: place.name,
+            address: place.formatted_address || '',
+            station: addressParts[0] || ''
+          }))
+        } else {
+          alert('場所の詳細情報を取得できませんでした')
+        }
+        setLoadingPredictions(false)
       }
-    } catch (error) {
-      console.error('Place details error:', error)
-    }
+    )
+  } catch (error) {
+    console.error('Error getting place details:', error)
+    alert('エラーが発生しました')
+    setLoadingPredictions(false)
   }
+}
 
   return (
     <div style={{
@@ -695,14 +733,14 @@ function AddPlaceModal({ onClose }) {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={handleSearchChange}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="場所を検索..."
                 style={mergeGhibliStyles(ghibliStyles.input, {
                   width: '100%',
                   boxSizing: 'border-box'
                 })}
               />
-              {isSearching && (
+              {loadingPredictions && (
                 <div style={{ 
                   position: 'absolute', 
                   right: '12px', 
@@ -712,22 +750,28 @@ function AddPlaceModal({ onClose }) {
                   検索中...
                 </div>
               )}
-              {predictions.length > 0 && (
-                <div style={mergeGhibliStyles(ghibliStyles.card, {
+              {showPredictions && predictions.length > 0 && (
+              <div 
+                style={mergeGhibliStyles(ghibliStyles.card, {
                   position: 'absolute',
                   top: '100%',
                   left: 0,
                   right: 0,
                   marginTop: '4px',
-                  maxHeight: '200px',
+                  maxHeight: '250px',
                   overflow: 'auto',
-                  zIndex: 1001,
-                  padding: '8px'
-                })}>
+                  zIndex: 99999,
+                  padding: '8px',
+                  boxShadow: '0 8px 24px rgba(74, 63, 53, 0.5)',
+                  touchAction: 'auto'
+                })}
+                onClick={(e) => e.stopPropagation()}
+              >
+
                   {predictions.map((prediction) => (
                     <div
                       key={prediction.place_id}
-                      onClick={() => selectPlace(prediction.place_id)}
+                      onClick={() => handleSelectPrediction(prediction)}
                       style={{
                         padding: '12px',
                         cursor: 'pointer',

@@ -1193,87 +1193,96 @@ const planData = {
             </div>
 
             {sortedSelectedPlaces.length > 0 && (
-              <div 
-                key={place.id || index} 
-                style={mergeGhibliStyles(ghibliStyles.card, {
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  padding: '12px',
-                  background: 'linear-gradient(to bottom, #FAF8F3 0%, #F5F1E8 100%)',
-                  border: '2px solid #C9A87C'
-                })}
-              >
-                {/* 1行目: 日時入力 */}
-                <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                  <input
-                    type="datetime-local"
-                    value={place.start_datetime}
-                    onChange={(e) => updatePlaceDateTime(selectedPlaces.indexOf(place), 'start_datetime', e.target.value)}
-                    style={mergeGhibliStyles(ghibliStyles.input, {
-                      flex: 1,
-                      padding: '6px 8px',
-                      fontSize: '12px',
-                      cursor: 'pointer'
-                    })}
-                    placeholder="開始"
-                  />
-                  <input
-                    type="datetime-local"
-                    value={place.end_datetime}
-                    onChange={(e) => updatePlaceDateTime(selectedPlaces.indexOf(place), 'end_datetime', e.target.value)}
-                    style={mergeGhibliStyles(ghibliStyles.input, {
-                      flex: 1,
-                      padding: '6px 8px',
-                      fontSize: '12px',
-                      cursor: 'pointer'
-                    })}
-                    placeholder="終了"
-                  />
-                </div>
-
-                {/* 2行目: 場所名・カテゴリ・削除ボタン */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3F35' }}>
-                      {place.name}
-                    </div>
-                    {place.station && (
-                      <div style={{ fontSize: '12px', color: '#8B7355', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={10} />
-                        {place.station}
+              <div>
+                <label style={{ ...commonStyles.label, marginBottom: '8px' }}>
+                  選択した場所 ({sortedSelectedPlaces.length}件)
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {sortedSelectedPlaces.map((place, index) => (
+                    <div 
+                      key={place.id || index} 
+                      style={mergeGhibliStyles(ghibliStyles.card, {
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        padding: '12px',
+                        background: 'linear-gradient(to bottom, #FAF8F3 0%, #F5F1E8 100%)',
+                        border: '2px solid #C9A87C'
+                      })}
+                    >
+                      {/* 1行目: 日時入力 */}
+                      <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                        <input
+                          type="datetime-local"
+                          value={place.start_datetime}
+                          onChange={(e) => updatePlaceDateTime(selectedPlaces.indexOf(place), 'start_datetime', e.target.value)}
+                          style={mergeGhibliStyles(ghibliStyles.input, {
+                            flex: 1,
+                            padding: '6px 8px',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          })}
+                          placeholder="開始"
+                        />
+                        <input
+                          type="datetime-local"
+                          value={place.end_datetime}
+                          onChange={(e) => updatePlaceDateTime(selectedPlaces.indexOf(place), 'end_datetime', e.target.value)}
+                          style={mergeGhibliStyles(ghibliStyles.input, {
+                            flex: 1,
+                            padding: '6px 8px',
+                            fontSize: '12px',
+                            cursor: 'pointer'
+                          })}
+                          placeholder="終了"
+                        />
                       </div>
-                    )}
-                  </div>
-                  <span style={mergeGhibliStyles(ghibliStyles.tag, {
-                    fontSize: '11px',
-                    padding: '4px 8px',
-                    flexShrink: 0
-                  })}>
-                    {place.category}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removePlace(selectedPlaces.indexOf(place))}
-                    style={mergeGhibliStyles(ghibliStyles.button, {
-                      padding: '6px',
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      background: 'linear-gradient(to bottom, #E8B5B5 0%, #D89A9A 100%)',
-                      border: '2px solid #C98585'
-                    })}
-                  >
-                    <X size={14} />
-                  </button>
+
+                      {/* 2行目: 場所名・カテゴリ・削除ボタン */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3F35' }}>
+                            {place.name}
+                          </div>
+                          {place.station && (
+                            <div style={{ fontSize: '12px', color: '#8B7355', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <MapPin size={10} />
+                              {place.station}
+                            </div>
+                          )}
+                        </div>
+                        <span style={mergeGhibliStyles(ghibliStyles.tag, {
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          flexShrink: 0
+                        })}>
+                          {place.category}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removePlace(selectedPlaces.indexOf(place))}
+                          style={mergeGhibliStyles(ghibliStyles.button, {
+                            padding: '6px',
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            background: 'linear-gradient(to bottom, #E8B5B5 0%, #D89A9A 100%)',
+                            border: '2px solid #C98585'
+                          })}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-
             )}
+
           </div>
 
           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>

@@ -80,35 +80,40 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
 const data = await response.json()
 
 console.log('API Response:', data)
-console.log('Steps:', data.steps)
 
 // Interactions APIの新しいレスポンス形式
 if (!data.steps || !Array.isArray(data.steps)) {
   throw new Error('Unexpected API response format: no steps array')
 }
 
-// すべてのstepをログ出力
-data.steps.forEach((step, index) => {
-  console.log(`Step ${index}:`, step)
-})
-
-// 最後のstepからoutputを取得
+// 最後のstepからcontentを取得
 const lastStep = data.steps[data.steps.length - 1]
-console.log('Last Step:', lastStep)
 
-// いろんなフィールドを試す
-const text = lastStep.output || lastStep.text || lastStep.content || lastStep.message || JSON.stringify(lastStep)
+if (!lastStep.content || !Array.isArray(lastStep.content)) {
+  throw new Error('No content array in last step')
+}
+
+// contentの最初の要素からtextを取得
+const firstContent = lastStep.content[0]
+const text = firstContent.text || firstContent.output || ''
+
+if (!text) {
+  throw new Error('No text in content')
+}
 
 console.log('Extracted text:', text)
 
+// JSON部分を抽出
 let jsonText = text
 const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/)
 if (jsonMatch) {
   jsonText = jsonMatch[1]
 }
 
+// JSONをパース
 const result = JSON.parse(jsonText.trim())
 return result
+
   }
 
 

@@ -348,7 +348,7 @@ function PlanCard({ plan, onEdit, onDelete }) {
                       )}
                     </div>
                     {displayPhotos.length > 0 && (
-                      <div style={{ display: 'flex', gap: '4px', flexDirection: 'column', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', gap: '4px', flexDirection: 'row', flexWrap: 'wrap', flexShrink: 0, maxWidth: '150px' }}>
                         {displayPhotos.map((photoUrl, photoIdx) => (
                           <img
                             key={photoIdx}
@@ -540,15 +540,18 @@ function PlanModal({ plan, onClose }) {
   const [formData, setFormData] = useState({
     title: plan?.title || '',
     date: plan?.date || '',
+    start_date: plan?.start_date || '',
+    end_date: plan?.end_date || '',
     season: plan?.season || '',
     notes: plan?.notes || ''
   })
   const [selectedPlaces, setSelectedPlaces] = useState(
-    plan?.places?.map(p => ({
-      ...p,
-      time: p.time || ''
-    })) || []
-  )
+  plan?.places?.map(p => ({
+    ...p,
+    start_datetime: p.start_datetime || '',
+    end_datetime: p.end_datetime || ''
+  })) || []
+)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
@@ -733,6 +736,12 @@ function PlanModal({ plan, onClose }) {
     )
   }
 
+  const updatePlaceDateTime = (index, field, value) => {
+  setSelectedPlaces(prev =>
+    prev.map((p, i) => i === index ? { ...p, [field]: value } : p)
+  )
+}
+
   const sortedSelectedPlaces = [...selectedPlaces].sort((a, b) => {
     const timeA = a.time || '23:59:59'
     const timeB = b.time || '23:59:59'
@@ -809,6 +818,38 @@ function PlanModal({ plan, onClose }) {
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({...formData, date: e.target.value})}
+              style={mergeGhibliStyles(ghibliStyles.input, {
+                width: '100%',
+                boxSizing: 'border-box',
+                cursor: 'pointer'
+              })}
+            />
+          </div>
+          <div>
+
+            <label style={commonStyles.label}>
+              開始日
+            </label>
+            <input
+              type="date"
+              value={formData.start_date}
+              onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+              style={mergeGhibliStyles(ghibliStyles.input, {
+                width: '100%',
+                boxSizing: 'border-box',
+                cursor: 'pointer'
+              })}
+            />
+          </div>
+
+          <div>
+            <label style={commonStyles.label}>
+              終了日
+            </label>
+            <input
+              type="date"
+              value={formData.end_date}
+              onChange={(e) => setFormData({...formData, end_date: e.target.value})}
               style={mergeGhibliStyles(ghibliStyles.input, {
                 width: '100%',
                 boxSizing: 'border-box',
@@ -1135,17 +1176,33 @@ function PlanModal({ plan, onClose }) {
                         border: '2px solid #C9A87C'
                       })}
                     >
-                      <input
-                        type="time"
-                        value={place.time}
-                        onChange={(e) => updatePlaceTime(selectedPlaces.indexOf(place), e.target.value)}
-                        style={mergeGhibliStyles(ghibliStyles.input, {
-                          width: '100px',
-                          padding: '6px 8px',
-                          fontSize: '12px',
-                          cursor: 'pointer'
-                        })}
-                      />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '180px' }}>
+                        <input
+                          type="datetime-local"
+                          value={place.start_datetime}
+                          onChange={(e) => updatePlaceDateTime(selectedPlaces.indexOf(place), 'start_datetime', e.target.value)}
+                          style={mergeGhibliStyles(ghibliStyles.input, {
+                            width: '100%',
+                            padding: '4px 6px',
+                            fontSize: '11px',
+                            cursor: 'pointer'
+                          })}
+                          placeholder="開始"
+                        />
+                        <input
+                          type="datetime-local"
+                          value={place.end_datetime}
+                          onChange={(e) => updatePlaceDateTime(selectedPlaces.indexOf(place), 'end_datetime', e.target.value)}
+                          style={mergeGhibliStyles(ghibliStyles.input, {
+                            width: '100%',
+                            padding: '4px 6px',
+                            fontSize: '11px',
+                            cursor: 'pointer'
+                          })}
+                          placeholder="終了"
+                        />
+                      </div>
+
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3F35' }}>
                           {place.name}

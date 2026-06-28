@@ -145,6 +145,8 @@ export const useStore = create((set, get) => ({
             category: pp.place?.category || 'カスタム',
             station: pp.place?.station || '',
             photos: pp.place?.photos || [],
+            start_datetime: pp.start_datetime,
+            end_datetime: pp.end_datetime,
             time: pp.time,
             isCustom: !pp.place
           }))

@@ -56,12 +56,13 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
 重要: 必ず有効なJSON形式で出力してください。余計な説明は不要です。`
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey,
+    },
         body: JSON.stringify({
           contents: [{
             parts: [{
@@ -79,8 +80,9 @@ ${searchLocation}周辺で${categoryDescription[selectedCategory]}を5〜8個提
     )
 
     if (!response.ok) {
-      throw new Error('AI API request failed')
-    }
+  const errorText = await response.text()
+  throw new Error(`AI API request failed: ${response.status} - ${errorText}`)
+}
 
     const data = await response.json()
     const text = data.candidates[0].content.parts[0].text

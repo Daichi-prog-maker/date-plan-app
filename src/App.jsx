@@ -16,7 +16,7 @@ function App() {
         const screenWidth = window.innerWidth
         
         // 画面端からのスワイプを防止
-        if (x < 50 || x > screenWidth - 50) {
+        if (x < 10 || x > screenWidth - 10) {
           e.preventDefault()
         }
       }

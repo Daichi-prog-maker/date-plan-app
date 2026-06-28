@@ -325,20 +325,40 @@ function PlanCard({ plan, onEdit, onDelete }) {
                       border: '2px solid #E8DCC8'
                     })}
                   >
-                    {place.time && (
-                      <span style={{ 
-                        fontSize: '12px', 
+                    {(place.start_datetime || place.end_datetime) && (
+                      <div style={{ 
+                        fontSize: '11px', 
                         fontWeight: 'bold', 
                         color: '#C9A87C', 
                         display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '4px', 
-                        minWidth: '60px' 
+                        flexDirection: 'column',
+                        gap: '2px', 
+                        minWidth: '120px' 
                       }}>
-                        <Clock size={12} />
-                        {place.time.substring(0, 5)}
-                      </span>
+                        {place.start_datetime && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Clock size={10} />
+                            {new Date(place.start_datetime).toLocaleString('ja-JP', { 
+                              month: 'numeric', 
+                              day: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </span>
+                        )}
+                        {place.end_datetime && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            → {new Date(place.end_datetime).toLocaleString('ja-JP', { 
+                              month: 'numeric', 
+                              day: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </span>
+                        )}
+                      </div>
                     )}
+
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: '14px', fontWeight: '600', color: '#4A3F35' }}>
                         {place.name}
@@ -674,9 +694,7 @@ function PlanModal({ plan, onClose }) {
     alert('プラン名を入力してください')
     return
   }
-  
-  // 既存のフィールドのみ送信
-  // 既存のフィールドのみ送信
+ 
 const planData = {
   title: formData.title,
   date: formData.start_date || null,  // 互換性のため、dateにstart_dateを入れる
@@ -692,8 +710,11 @@ const planData = {
     place_id: place.place_id || null,
     custom_name: place.isCustom ? place.name : null,
     time: place.time || null,
+    start_datetime: place.start_datetime || null,
+    end_datetime: place.end_datetime || null,
     order_index: index
   }))
+
 
   console.log('Saving planPlaces:', planPlaces) // デバッグ用
 

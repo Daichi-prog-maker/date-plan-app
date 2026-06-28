@@ -22,7 +22,16 @@ body {
   background-attachment: fixed;
   background-repeat: no-repeat;
   min-height: 100vh;
+}body {
+  margin: 0;
+  font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(to bottom, #E8F5E8 0%, #D5EDD5 50%, #C9E4C9 100%);
+  min-height: 100vh;
+  background-attachment: fixed;
 }
+
 
 /* 背景画像の上に薄い緑のオーバーレイを追加 */
 body::before {

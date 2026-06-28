@@ -833,38 +833,40 @@ const planData = {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={commonStyles.label}>
-              プラン名 <span style={{ color: '#E8B5B5' }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
-              style={mergeGhibliStyles(ghibliStyles.input, {
-                width: '100%',
-                boxSizing: 'border-box'
-              })}
-              placeholder="例: 新宿デート"
-            />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ flex: 1 }}>
+              <label style={commonStyles.label}>
+                開始日
+              </label>
+              <input
+                type="date"
+                value={formData.start_date}
+                onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+                style={mergeGhibliStyles(ghibliStyles.input, {
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer'
+                })}
+              />
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <label style={commonStyles.label}>
+                終了日
+              </label>
+              <input
+                type="date"
+                value={formData.end_date}
+                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+                style={mergeGhibliStyles(ghibliStyles.input, {
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer'
+                })}
+              />
+            </div>
           </div>
 
-          <div>
-
-            <label style={commonStyles.label}>
-              開始日
-            </label>
-            <input
-              type="date"
-              value={formData.start_date}
-              onChange={(e) => setFormData({...formData, start_date: e.target.value})}
-              style={mergeGhibliStyles(ghibliStyles.input, {
-                width: '100%',
-                boxSizing: 'border-box',
-                cursor: 'pointer'
-              })}
-            />
-          </div>
 
           <div>
             <label style={commonStyles.label}>

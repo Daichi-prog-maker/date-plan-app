@@ -676,12 +676,15 @@ function PlanModal({ plan, onClose }) {
   }
   
   // 既存のフィールドのみ送信
-  const planData = {
-    title: formData.title,
-    date: formData.date || null,
-    season: formData.season || null,
-    notes: formData.notes || null
-  }
+  // 既存のフィールドのみ送信
+const planData = {
+  title: formData.title,
+  date: formData.start_date || null,  // 互換性のため、dateにstart_dateを入れる
+  start_date: formData.start_date || null,
+  end_date: formData.end_date || null,
+  season: formData.season || null,
+  notes: formData.notes || null
+}
   
   console.log('Saving planData:', planData) // デバッグ用
   

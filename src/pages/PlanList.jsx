@@ -854,7 +854,7 @@ const planData = {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
         <div>
-          <label style={{ ...commonStyles.label, fontSize: '12px' }}>
+          <label style={commonStyles.label}>
             開始日
           </label>
           <input
@@ -864,15 +864,13 @@ const planData = {
             style={mergeGhibliStyles(ghibliStyles.input, {
               width: '100%',
               boxSizing: 'border-box',
-              cursor: 'pointer',
-              padding: '6px 8px',
-              fontSize: '13px'
+              cursor: 'pointer'
             })}
           />
         </div>
 
         <div>
-          <label style={{ ...commonStyles.label, fontSize: '12px' }}>
+          <label style={commonStyles.label}>
             終了日
           </label>
           <input
@@ -882,12 +880,11 @@ const planData = {
             style={mergeGhibliStyles(ghibliStyles.input, {
               width: '100%',
               boxSizing: 'border-box',
-              cursor: 'pointer',
-              padding: '6px 8px',
-              fontSize: '13px'
+              cursor: 'pointer'
             })}
           />
         </div>
+
       </div>
 
           <div>

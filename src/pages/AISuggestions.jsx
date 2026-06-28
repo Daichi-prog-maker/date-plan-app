@@ -482,3 +482,4 @@ function SuggestionCard({ place }) {
     </div>
   )
 }
+

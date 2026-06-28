@@ -123,10 +123,13 @@ export const useStore = create((set, get) => ({
           id,
           order_index,
           time,
+          start_datetime,
+          end_datetime,
           custom_name,
           place:places (*)
         )
       `)
+
       .order('created_at', { ascending: false })
     
     if (!error) {
@@ -134,10 +137,11 @@ export const useStore = create((set, get) => ({
         ...plan,
         places: plan.plan_places
           .sort((a, b) => {
-            const timeA = a.time || '23:59:59'
-            const timeB = b.time || '23:59:59'
-            return timeA.localeCompare(timeB)
+            const timeA = a.start_datetime || a.time || '23:59:59'
+            const timeB = b.start_datetime || b.time || '23:59:59'
+            return timeA.toString().localeCompare(timeB.toString())
           })
+
           .map(pp => ({
             id: pp.id,
             place_id: pp.place?.id || null,

@@ -851,8 +851,7 @@ const planData = {
           placeholder="例: 新宿デート"
         />
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+      
         <div>
           <label style={commonStyles.label}>
             開始日
@@ -884,8 +883,6 @@ const planData = {
             })}
           />
         </div>
-
-      </div>
 
           <div>
             <label style={commonStyles.label}>

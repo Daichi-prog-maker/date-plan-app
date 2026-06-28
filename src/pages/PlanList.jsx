@@ -333,9 +333,10 @@ function PlanCard({ plan, onEdit, onDelete }) {
                         display: 'flex', 
                         flexDirection: 'column',
                         gap: '2px', 
-                        minWidth: '150px',  // ← ここを120pxから150pxに変更
-                        flexShrink: 0       // ← これを追加（縮小しないように）
+                        minWidth: '180px',  // ← 150pxから180pxに変更
+                        flexShrink: 0
                       }}>
+
 
                         {place.start_datetime && (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -814,74 +815,81 @@ const planData = {
           paddingBottom: '100px'
         })}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#4A3F35' }}>
-            {isEdit ? 'プランを編集' : '新しいプランを作成'}
-          </h2>
-          <button 
-            onClick={onClose} 
-            style={mergeGhibliStyles(ghibliStyles.button, {
-              padding: '4px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#4A3F35' }}>
+        {isEdit ? 'プランを編集' : '新しいプランを作成'}
+      </h2>
+      <button 
+        onClick={onClose} 
+        style={mergeGhibliStyles(ghibliStyles.button, {
+          padding: '4px',
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        })}
+      >
+        <X size={24} />
+      </button>
+    </div>
+
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div>
+        <label style={commonStyles.label}>
+          プラン名 <span style={{ color: '#E8B5B5' }}>*</span>
+        </label>
+        <input
+          type="text"
+          value={formData.title}
+          onChange={(e) => setFormData({...formData, title: e.target.value})}
+          style={mergeGhibliStyles(ghibliStyles.input, {
+            width: '100%',
+            boxSizing: 'border-box'
+          })}
+          placeholder="例: 新宿デート"
+        />
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ flex: 1 }}>
+          <label style={commonStyles.label}>
+            開始日
+          </label>
+          <input
+            type="date"
+            value={formData.start_date}
+            onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+            style={mergeGhibliStyles(ghibliStyles.input, {
+              width: '100%',
+              boxSizing: 'border-box',
+              cursor: 'pointer',
+              padding: '6px 8px',
+              fontSize: '13px'
             })}
-          >
-            <X size={24} />
-          </button>
+          />
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-  <div>
-    <label style={commonStyles.label}>
-      プラン名 <span style={{ color: '#E8B5B5' }}>*</span>
-    </label>
-    <input
-      type="text"
-      value={formData.title}
-      onChange={(e) => setFormData({...formData, title: e.target.value})}
-      style={mergeGhibliStyles(ghibliStyles.input, {
-        width: '100%',
-        boxSizing: 'border-box'
-      })}
-      placeholder="例: 新宿デート"
-    />
-  </div>
+        <div style={{ flex: 1 }}>
+          <label style={commonStyles.label}>
+            終了日
+          </label>
+          <input
+            type="date"
+            value={formData.end_date}
+            onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+            style={mergeGhibliStyles(ghibliStyles.input, {
+              width: '100%',
+              boxSizing: 'border-box',
+              cursor: 'pointer',
+              padding: '6px 8px',
+              fontSize: '13px'
+            })}
+          />
+        </div>
+      </div>
 
-  <div>
-    <label style={commonStyles.label}>
-      開始日
-    </label>
-    <input
-      type="date"
-      value={formData.start_date}
-      onChange={(e) => setFormData({...formData, start_date: e.target.value})}
-      style={mergeGhibliStyles(ghibliStyles.input, {
-        width: '100%',
-        boxSizing: 'border-box',
-        cursor: 'pointer'
-      })}
-    />
-  </div>
-
-  <div>
-    <label style={commonStyles.label}>
-      終了日
-    </label>
-    <input
-      type="date"
-      value={formData.end_date}
-      onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-      style={mergeGhibliStyles(ghibliStyles.input, {
-        width: '100%',
-        boxSizing: 'border-box',
-        cursor: 'pointer'
-      })}
-    />
-  </div>
 
 
           <div>

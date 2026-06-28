@@ -851,7 +851,7 @@ const planData = {
           placeholder="例: 新宿デート"
         />
       </div>
-      
+
         <div>
           <label style={commonStyles.label}>
             開始日
@@ -1088,17 +1088,23 @@ const planData = {
                       </div>
                     )}
                     {showPredictions && predictions.length > 0 && (
-                      <div style={mergeGhibliStyles(ghibliStyles.card, {
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        marginTop: '4px',
-                        maxHeight: '200px',
-                        overflow: 'auto',
-                        zIndex: 1001,
-                        padding: '8px'
-                      })}>
+                      <div 
+                        style={mergeGhibliStyles(ghibliStyles.card, {
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          marginTop: '4px',
+                          maxHeight: '250px',
+                          overflow: 'auto',
+                          zIndex: 99999,
+                          padding: '8px',
+                          boxShadow: '0 8px 24px rgba(74, 63, 53, 0.5)',
+                          touchAction: 'auto'
+                        })}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+
                         {predictions.map((prediction) => (
                           <div
                             key={prediction.place_id}
